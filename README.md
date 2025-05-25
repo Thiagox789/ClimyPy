@@ -5,6 +5,8 @@ En esta primera etapa del proyecto **ClimyPy** se trata sobre la configuración 
 
 ## ✅ Objetivos
 
--Configurar el sensor DHT11 para subirselo a la placa arduino, enviar los datos por el puerto serial
--Crear un programa en python para que pueda escuchar el puerto serial, asi toma los valores.
+- Configurar el sensor DHT11 para subirselo a la placa arduino, enviar los datos por el puerto serial.
 
+- Crear un programa en python para que pueda escuchar el puerto serial, asi toma los valores.
+
+- Documentar
