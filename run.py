@@ -1,42 +1,12 @@
-from flask import Flask, jsonify, render_template_string
+from flask import Flask, jsonify, render_template
 import json
 
 app = Flask(__name__)
 
 @app.route("/")
 def index():
-    html = """
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>ClimyPy</title>
-        <meta charset="UTF-8">
-    </head>
-    <body>
-        <h1>Datos en vivo 🌡️💧</h1>
-        <p>Temperatura: <span id="temp">--</span> °C</p>
-        <p>Humedad: <span id="hum">--</span> %</p>
-        <p>Actualizado: <span id="time">--</span></p>
+    return render_template("index.html")
 
-        <script>
-            function actualizarDatos() {
-                fetch("/data")
-                    .then(response => response.json())
-                    .then(data => {
-                        document.getElementById("temp").textContent = data.temperatura;
-                        document.getElementById("hum").textContent = data.humedad;
-                        document.getElementById("time").textContent = data.timestamp;
-                    })
-                    .catch(error => console.log("Error:", error));
-            }
-
-            setInterval(actualizarDatos, 2000); // cada 2 segundos
-            actualizarDatos(); // llamada inicial
-        </script>
-    </body>
-    </html>
-    """
-    return render_template_string(html)
 
 @app.route("/data")
 def data():

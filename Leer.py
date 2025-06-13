@@ -15,7 +15,7 @@ try:
                 datos = {
                     "temperatura": float(temperatura),
                     "humedad": float(humedad),
-                    "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
+                    "fecha": time.strftime("%Y-%m-%d %H:%M:%S")
                 }
                 with open("data.json", "w") as archivo:
                     json.dump(datos, archivo)

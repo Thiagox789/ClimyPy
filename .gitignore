@@ -21,3 +21,4 @@ Thumbs.db
 # Configuración de Python
 *.env
 *.venv
+data.json
