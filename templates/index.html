@@ -1,29 +1,28 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>ClimyPy</title>
-    <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ClimyPy • Monitor de Clima</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
 </head>
 <body>
-    <h1>Datos en vivo 🌡️💧</h1>
-    <p>Temperatura: <span id="temp">--</span> °C</p>
-    <p>Humedad: <span id="hum">--</span> %</p>
-    <p>Actualizado: <span id="time">--</span></p>
+  <div class="container" role="main" aria-label="Monitor de temperatura y humedad">
+    <h1>ClimyPy</h1>
 
-    <script>
-        function actualizarDatos() {
-            fetch("/data")
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById("temp").textContent = data.temperatura;
-                    document.getElementById("hum").textContent = data.humedad;
-                    document.getElementById("time").textContent = data.fecha;
-                })
-                .catch(error => console.log("Error:", error));
-        }
+    <div class="data-point" aria-live="polite">
+      <span class="emoji" aria-hidden="true">🌡️</span>
+      Temperatura: <strong id="temp">--</strong> °C
+    </div>
 
-        setInterval(actualizarDatos, 2000); // cada 2 segundos
-        actualizarDatos(); // llamada inicial
-    </script>
+    <div class="data-point" aria-live="polite">
+      <span class="emoji" aria-hidden="true">💧</span>
+      Humedad: <strong id="hum">--</strong> %
+    </div>
+
+    <p id="time" aria-live="polite">Actualizado: --</p>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
 </html>

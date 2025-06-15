@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <title>Registros ClimyPy</title>
+    <style>
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #aaa; padding: 8px; text-align: center; }
+        th { background-color: #4CAF50; color: white; }
+    </style>
+</head>
+<body>
+    <h1>Últimos registros de temperatura y humedad</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Temperatura (°C)</th>
+                <th>Humedad (%)</th>
+                <th>Fecha</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for reg in registros %}
+            <tr>
+                <td>{{ reg.id }}</td>
+                <td>{{ reg.temperatura }}</td>
+                <td>{{ reg.humedad }}</td>
+                <td>{{ reg.fecha }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
