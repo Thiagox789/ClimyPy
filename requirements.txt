@@ -1,3 +1,5 @@
 pyserial
 flask
 flask_sqlalchemy
+pytz
+python-dateutil

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>ClimyPy - Gráficos</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 2rem;
+            background-color: #f0f0f0;
+        }
+        h1 {
+            color: #333;
+        }
+        canvas {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <h1>🌡️ Humedad y Temperatura - ClimyPy</h1>
+    <canvas id="grafico" width="800" height="400"></canvas>
+
+    <script>
+        async function cargarGrafico() {
+            const res = await fetch("/api/registros");
+            const datos = await res.json();
+
+            const ctx = document.getElementById("grafico").getContext("2d");
+            new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels: datos.fechas,
+                    datasets: [
+                        {
+                            label: "Temperatura (°C)",
+                            data: datos.temperaturas,
+                            borderColor: "rgb(255, 99, 132)",
+                            tension: 0.2,
+                            fill: false
+                        },
+                        {
+                            label: "Humedad (%)",
+                            data: datos.humedades,
+                            borderColor: "rgb(54, 162, 235)",
+                            tension: 0.2,
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: "top"
+                        },
+                        title: {
+                            display: true,
+                            text: "Registro histórico de ClimyPy"
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        cargarGrafico();
+    </script>
+</body>
+</html>

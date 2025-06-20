@@ -13,6 +13,24 @@ db.init_app(app)
 with app.app_context():
     db.create_all()
 
+def guardar_periodicamente():
+    while True:
+        try:
+            with open("data.json", "r") as f:
+                datos = json.load(f)
+            nueva = Registro(
+                temperatura=float(datos["temperatura"]),
+                humedad=float(datos["humedad"]),
+                fecha=datetime.strptime(datos["fecha"], "%Y-%m-%d %H:%M:%S")
+            )
+            with app.app_context():
+                db.session.add(nueva)
+                db.session.commit()
+            print(f"Guardado: {nueva.temperatura}°C, {nueva.humedad}% at {nueva.fecha}")
+        except Exception as e:
+            print(f"Error guardando: {e}")
+        time.sleep(60)  # Espera 1 minuto
+
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -22,64 +40,32 @@ def data():
     try:
         with open("data.json", "r") as f:
             datos = json.load(f)
-
-        # Guardar lectura en la base de datos (solo cuando se pide la ruta /data)
-        nueva = Registro(
-            temperatura=float(datos["temperatura"]),
-            humedad=float(datos["humedad"]),
-            fecha=datetime.strptime(datos["fecha"], "%Y-%m-%d %H:%M:%S")
-        )
-        db.session.add(nueva)
-        db.session.commit()
-
         return jsonify(datos)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    
+
+@app.route("/grafico")
+def grafico():
+    return render_template("grafico.html")
 @app.route("/api/registros")
 def api_registros():
     registros = Registro.query.order_by(Registro.fecha.desc()).limit(100).all()
-    resultados = []
-    for r in registros:
-        resultados.append({
-            "id": r.id,
-            "temperatura": r.temperatura,
-            "humedad": r.humedad,
-            "fecha": r.fecha.strftime("%Y-%m-%d %H:%M:%S")
-        })
-    return jsonify(resultados)
+    registros.reverse()  # Para mostrar en orden cronológico
 
-def guardar_datos_periodicamente():
-    with app.app_context():
-        while True:
-            try:
-                with open("data.json", "r") as f:
-                    datos = json.load(f)
+    data = {
+        "fechas": [r.fecha.strftime("%H:%M:%S") for r in registros],
+        "temperaturas": [r.temperatura for r in registros],
+        "humedades": [r.humedad for r in registros]
+    }
+    return jsonify(data)
 
-                fecha = datetime.strptime(datos["fecha"], "%Y-%m-%d %H:%M:%S")
-
-                # Evitar duplicados
-                existe = Registro.query.filter_by(fecha=fecha).first()
-                if not existe:
-                    nuevo = Registro(
-                        temperatura=datos["temperatura"],
-                        humedad=datos["humedad"],
-                        fecha=fecha
-                    )
-                    db.session.add(nuevo)
-                    db.session.commit()
-                    print("Datos guardados en DB (hilo background)")
-                else:
-                    print("Dato ya existente, no se guarda")
-
-            except Exception as e:
-                print("Error guardando datos:", e)
-
-            time.sleep(60)  # Espera 60 segundos
+@app.route("/registros")
+def registros():
+    registros = Registro.query.order_by(Registro.fecha.desc()).all()
+    return render_template("registros.html", registros=registros)
 
 if __name__ == "__main__":
-    # Iniciar hilo que guarda datos cada 60s
-    hilo = threading.Thread(target=guardar_datos_periodicamente, daemon=True)
-    hilo.start()
-
+    # Lanzar thread para guardar datos cada minuto
+    thread = threading.Thread(target=guardar_periodicamente, daemon=True)
+    thread.start()
     app.run(host="0.0.0.0", port=5000, debug=True)
