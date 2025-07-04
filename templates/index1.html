@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ClimyPy • Monitor de Clima</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
+</head>
+<body>
+  <div class="container" role="main" aria-label="Monitor de temperatura y humedad">
+    <h1>ClimyPy</h1>
+
+    <div class="data-point" aria-live="polite">
+      <span class="emoji" aria-hidden="true">🌡️</span>
+      Temperatura: <strong id="temp">--</strong> °C
+    </div>
+
+    <div class="data-point" aria-live="polite">
+      <span class="emoji" aria-hidden="true">💧</span>
+      Humedad: <strong id="hum">--</strong> %
+    </div>
+
+    <p id="time" aria-live="polite">Actualizado: --</p>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

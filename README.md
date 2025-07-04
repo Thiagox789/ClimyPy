@@ -1,69 +1,106 @@
-# ClimyPy
+# ClimyPy ESP32 🌡️
 
-ClimyPy es un proyecto diseñado para monitorear la temperatura y la humedad utilizando un sensor **DHT11** conectado a una placa Arduino. Los datos se procesan y almacenan en una base de datos, y se presentan en una interfaz web interactiva.
+ClimyPy es un sistema de monitoreo de temperatura y humedad que utiliza un **ESP32** con sensor **DHT11** para enviar datos via **WiFi** a un servidor Flask.
 
 ## 🚀 Características
 
-- **Lectura de datos en tiempo real** desde el sensor DHT11 mediante conexión USB Serial.
-- **Visualización en tiempo real** de temperatura y humedad en una interfaz web moderna.
-- **Gráficos históricos** para analizar tendencias de temperatura y humedad.
-- **Almacenamiento automático** de registros en una base de datos SQLite.
-- **API REST** para acceder a los datos históricos.
-
-## ✅ Objetivos
-
-1. Configurar el sensor DHT11 en Arduino para enviar datos por el puerto serial.
-2. Crear un programa en Python para leer los datos del puerto serial y almacenarlos.
-3. Desarrollar una interfaz web con Flask para mostrar los datos en tiempo real y gráficos históricos.
-4. Documentar el proceso de configuración y uso del proyecto.
+- **ESP32 con WiFi**: Envío inalámbrico de datos cada 30 segundos
+- **Sensor DHT11**: Lectura precisa de temperatura y humedad
+- **Interfaz web moderna**: Visualización en tiempo real y gráficos históricos
+- **Base de datos SQLite**: Almacenamiento automático de todos los registros
+- **API REST**: Endpoints para recibir y consultar datos
 
 ## 📂 Estructura del Proyecto
 
-```bash
-ClimyPy/
-│
-├── arduino/                  # Código y configuraciones para Arduino
-│   ├── DHT11_sensor.ino      # Sketch de Arduino para el sensor DHT11
-│   └── ...
-│
-├── python/                   # Scripts en Python para procesamiento de datos
-│   ├── serial_listener.py    # Script para leer datos del puerto serial
-│   ├── database_handler.py   # Manejo de la base de datos SQLite
-│   └── ...
-│
-├── web/                      # Archivos para la interfaz web
-│   ├── app.py                # Aplicación principal de Flask
-│   ├── templates/            # Plantillas HTML
-│   └── static/               # Archivos estáticos (CSS, JS, imágenes)
-│
-├── requirements.txt          # Dependencias del proyecto
-└── README.md                 # Documentación del proyecto
+```
+ClimyPy-ESP32/
+├── sensor_esp32.ino          # Código para ESP32
+├── run.py                    # Servidor Flask
+├── models.py                 # Modelo de base de datos
+├── requirements.txt          # Dependencias Python
+├── Setup.sh                  # Script de instalación
+├── templates/
+│   ├── index.html           # Dashboard principal
+│   ├── grafico.html         # Gráficos históricos
+│   └── registros.html       # Tabla de registros
+└── static/
+    ├── css/styles.css       # Estilos
+    └── js/app.js            # JavaScript frontend
 ```
 
 ## 🛠️ Instalación
 
-1. **Clonar el repositorio**:
-   ```bash
-   git clone https://github.com/tu-usuario/ClimyPy.git
-   cd ClimyPy
+### 1. Configurar el servidor Python
+
+```bash
+# Clonar y configurar
+git clone https://github.com/tu-usuario/ClimyPy-ESP32.git
+cd ClimyPy-ESP32
+
+# Ejecutar script de configuración
+chmod +x Setup.sh
+./Setup.sh
+```
+
+### 2. Configurar ESP32
+
+1. **Instalar librerías en Arduino IDE:**
+   - WiFi (incluida en ESP32)
+   - HTTPClient (incluida en ESP32)
+   - ArduinoJson (buscar en Library Manager)
+   - DHT sensor library (buscar "DHT" por Adafruit)
+
+2. **Modificar configuración WiFi en `sensor_esp32.ino`:**
+   ```cpp
+   const char* ssid = "TU_WIFI";
+   const char* password = "TU_PASSWORD";
+   const char* serverURL = "http://IP_DEL_SERVIDOR:5000/api/sensor";
    ```
 
-2. **Ejecutar el script de configuración**:
-   ```bash
-   chmod +x Setup.sh
-   ./Setup.sh
-   ```
+3. **Conexión DHT11:**
+   - VCC → 3.3V
+   - GND → GND
+   - DATA → GPIO 4
+
+### 3. Ejecutar el sistema
+
+```bash
+# Activar entorno virtual
+source venv/bin/activate
+
+# Ejecutar servidor
+python3 run.py
+```
 
 ## 🌐 Uso
 
-- Accede a la interfaz web en [http://localhost:5000] o [http://ip_server:5000]
-- Visualiza los gráficos históricos en [http://localhost:5000/grafico] o [http://ip_server:5000/grafico]
-- Consulta los registros en [http://localhost:5000/registros] o [http://ip_server:5000/registros]
+- **Dashboard principal**: `http://localhost:5000`
+- **Gráficos históricos**: `http://localhost:5000/grafico`
+- **Registros**: `http://localhost:5000/registros`
+- **Estado del sistema**: `http://localhost:5000/status`
+
+## 🔧 API Endpoints
+
+- `POST /api/sensor` - Recibe datos del ESP32
+- `GET /data` - Obtiene últimos datos
+- `GET /api/registros` - Datos para gráficos
+- `GET /status` - Estado del sistema
+
+## 📡 Flujo de datos
+
+1. ESP32 lee sensor DHT11 cada 30 segundos
+2. Envía datos JSON via HTTP POST al servidor Flask
+3. Flask almacena datos en SQLite y actualiza cache
+4. Interfaz web muestra datos en tiempo real
+
+## 🐛 Troubleshooting
+
+- **ESP32 no conecta**: Verificar credenciales WiFi
+- **Error HTTP**: Comprobar IP del servidor
+- **Sin datos**: Verificar conexión del sensor DHT11
+- **Servidor no responde**: Verificar que Flask esté ejecutándose
 
 ## 📦 Dependencias
 
-Las dependencias del proyecto están listadas en `requirements.txt`. Instálalas con:
-```bash
-pip install -r requirements.txt
-```
-
+- **ESP32**: WiFi, HTTPClient, ArduinoJson, DHT
+- **Python**: Flask, SQLAlchemy, pytz

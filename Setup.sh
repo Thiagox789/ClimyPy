@@ -19,8 +19,5 @@ pip install -r requirements.txt || {
     echo "❌ Error instalando dependencias."
     exit 1
 }
-echo "🚀 Ejecutando script de lectura del sensor en segundo plano..."
-python3 Leer.py &
-
 echo "🌐 Ejecutando servidor Flask..."
 python3 run.py
