@@ -364,6 +364,7 @@
                     <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión ({{ current_user.username }})</a></li>
                 {% else %}
                     <li><a href="{{ url_for('login') }}"><i class="fas fa-sign-in-alt"></i> Iniciar Sesión</a></li>
+                    <li><a href="{{ url_for('register') }}"><i class="fas fa-user-plus"></i> Registrarse</a></li> {# <-- NUEVO ENLACE #}
                 {% endif %}
             </ul>
         </nav>

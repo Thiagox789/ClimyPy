@@ -1,10 +1,10 @@
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash
-from models import db, Registro, User # Importa el nuevo modelo User
+from models import db, Registro, User
 from datetime import datetime
+import os 
 import pytz
-import os # Importar para generar una clave secreta
-from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
-from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import LoginManager, login_user, current_user, logout_user, login_required
+from forms import RegistrationForm, LoginForm # ¡NUEVO! Importa los formularios
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///climypy.db"
@@ -16,11 +16,8 @@ db.init_app(app)
 # Configuración de Flask-Login
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = 'login' # La ruta para la vista de login
-login_manager.login_message = "Por favor, inicia sesión para acceder a esta página."
-login_manager.login_message_category = "warning"
+login_manager.login_view = 'login' # Define la vista de login
 
-# Callback para recargar el objeto usuario desde la ID de usuario almacenada en la sesión
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -29,11 +26,11 @@ with app.app_context():
     db.create_all()
     # Crear un usuario administrador por defecto si no existe
     if not User.query.filter_by(username='admin').first():
-        admin_user = User(username='admin')
-        admin_user.set_password('tu_contrasena_segura') # ¡¡¡CAMBIA ESTO POR UNA CONTRASEÑA SEGURA!!!
+        admin_user = User(username='admin', email='admin@climypy.com', is_admin=True) # <-- Cambios aquí
+        admin_user.set_password('lobito200') # Tu contraseña actual
         db.session.add(admin_user)
         db.session.commit()
-        print("Usuario 'admin' creado con contraseña 'tu_contrasena_segura'. ¡CÁMBIALA!")
+        print("Usuario 'admin' creado con contraseña 'lobito200' y email 'admin@climypy.com'.")
 
 # Zona horaria Argentina
 zona_arg = pytz.timezone("America/Argentina/Buenos_Aires")
@@ -51,26 +48,38 @@ ultimo_dato = {
 def index():
     return render_template("index.html")
 
-# Rutas de autenticación
-@app.route("/login", methods=["GET", "POST"])
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if current_user.is_authenticated:
+        flash('Ya has iniciado sesión.', 'info')
+        return redirect(url_for('index'))
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        user = User(username=form.username.data, email=form.email.data)
+        user.set_password(form.password.data)
+        db.session.add(user)
+        db.session.commit()
+        flash('¡Tu cuenta ha sido creada! Ahora puedes iniciar sesión.', 'success')
+        return redirect(url_for('login'))
+    return render_template('register.html', title='Registro', form=form)
+
+# --- Modifica tu ruta de Login para usar LoginForm de forms.py ---
+@app.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        flash("Ya has iniciado sesión.", "info")
+        flash('Ya has iniciado sesión.', 'info')
         return redirect(url_for('index'))
-
-    if request.method == "POST":
-        username = request.form.get("username")
-        password = request.form.get("password")
-        user = User.query.filter_by(username=username).first()
-
-        if user and user.check_password(password):
-            login_user(user)
-            flash(f"¡Bienvenido, {user.username}!", "success")
-            next_page = request.args.get('next') # Redirige a la página que intentaba acceder
-            return redirect(next_page or url_for('index'))
+    form = LoginForm() # Usar LoginForm de forms.py
+    if form.validate_on_submit():
+        user = User.query.filter_by(username=form.username.data).first()
+        if user and user.check_password(form.password.data):
+            login_user(user, remember=form.remember.data)
+            flash('¡Inicio de sesión exitoso!', 'success')
+            next_page = request.args.get('next')
+            return redirect(next_page) if next_page else redirect(url_for('index'))
         else:
-            flash("Usuario o contraseña incorrectos.", "danger")
-    return render_template("login.html")
+            flash('Inicio de sesión fallido. Por favor, verifica tu usuario y contraseña.', 'danger')
+    return render_template('login.html', title='Iniciar Sesión', form=form)
 
 @app.route("/logout")
 @login_required # Solo usuarios logeados pueden desloguearse
