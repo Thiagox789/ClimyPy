@@ -5,3 +5,5 @@ Werkzeug
 pytz
 python-dateutil
 Flask-WTF
+python-telegram-bot 
+requests
