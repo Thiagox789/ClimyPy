@@ -30,6 +30,27 @@
             top: 0;
             z-index: 1000;
         }
+        /* Flash messages */
+        .flash-messages {
+            max-width: 1200px;
+            margin: 20px auto 0 auto;
+            padding: 0 20px;
+        }
+
+        .flash {
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 8px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .flash.success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .flash.danger { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .flash.warning { background-color: #fff3cd; color: #664d03; border: 1px solid #ffecb5; }
+        .flash.info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
 
         .nav-container {
             max-width: 1200px;
@@ -309,27 +330,40 @@
     </style>
 </head>
 <body>
-    <!-- Header -->
     <header class="header">
-        <nav class="nav-container">
-            <a href="#" class="logo">
-                <i class="fas fa-thermometer-half"></i>
+        <nav class="navbar">
+            <a href="/" class="logo">
+                <i class="fas fa-cloud"></i>
                 ClimyPy
             </a>
-            <ul class="nav-menu">
-                <li><a href="#dashboard"><i class="fas fa-home"></i> Dashboard</a></li>
-                <li><a href="#graficos"><i class="fas fa-chart-line"></i> Gráficos</a></li>
-                <li><a href="#registros"><i class="fas fa-table"></i> Registros</a></li>
-                <li><a href="#about"><i class="fas fa-info-circle"></i> Acerca de</a></li>
-                <li><a href="#contact"><i class="fas fa-envelope"></i> Contacto</a></li>
-            </ul>
             <div class="hamburger">
                 <span></span>
                 <span></span>
                 <span></span>
             </div>
+            <ul class="nav-menu">
+                <li><a href="/grafico"><i class="fas fa-chart-line"></i> Ver Gráficos</a></li>
+                <li><a href="/registros"><i class="fas fa-list-alt"></i> Ver Registros</a></li>
+                <li><a href="/status"><i class="fas fa-info-circle"></i> Estado del Sistema</a></li>
+                <li><a href="#about"><i class="fas fa-info"></i> Acerca de ClimyPy</a></li>
+                <li><a href="#contact"><i class="fas fa-envelope"></i> Contacto</a></li>
+                {% if current_user.is_authenticated %}
+                    <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión ({{ current_user.username }})</a></li>
+                {% else %}
+                    <li><a href="{{ url_for('login') }}"><i class="fas fa-sign-in-alt"></i> Iniciar Sesión</a></li>
+                {% endif %}
+            </ul>
         </nav>
     </header>
+    <div class="flash-messages">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
 
     <!-- Main Content -->
     <main class="main-content">
@@ -475,70 +509,91 @@
 
     // Función para actualizar datos
     async function actualizarDatos() {
-        try {
-            const response = await fetch('/data');
-            if (!response.ok) throw new Error('Error en respuesta');
-            const data = await response.json();
-
-            // Convertir la fecha del dato a un objeto Date para comparar
-            const fechaUltimoDato = new Date(data.fecha);
-            const ahora = new Date();
-            const diferenciaMs = ahora.getTime() - fechaUltimoDato.getTime();
-
-            // Determinar el estado del sensor
-            if (diferenciaMs < umbralDesconexionMs) {
-                sensorOnline = true;
-            } else {
-                sensorOnline = false;
+    try {
+        const response = await fetch('/data');
+        // Si la respuesta no es OK (ej. 401 Unauthorized por login_required), lo manejamos
+        if (!response.ok) {
+            if (response.status === 401) {
+                 // Si no está autenticado, no hacemos nada con los datos, solo actualizamos el estado
+                 // console.log("Usuario no autenticado, no se obtienen datos.");
+                 // Opcional: podrías mostrar un mensaje en el UI si es necesario,
+                 // pero por lo general, si la página está protegida, el usuario no debería llegar aquí sin login.
+                 return; // Salimos de la función si no hay autenticación
             }
-
-            // Actualizar valores principales
-            document.getElementById('temp').textContent = data.temperatura ?? '--';
-            document.getElementById('hum').textContent = data.humedad ?? '--';
-            document.getElementById('last-update').textContent =
-                'Última actualización: ' + (data.fecha ?? '--');
-
-            // Actualizar estados visuales
-            const tempStatusElement = document.getElementById('temp-status');
-            const humStatusElement = document.getElementById('hum-status');
-
-            if (sensorOnline) {
-                tempStatusElement.className = 'sensor-status status-online';
-                tempStatusElement.textContent = 'En línea';
-                humStatusElement.className = 'sensor-status status-online';
-                humStatusElement.textContent = 'En línea';
-                document.getElementById('temp').classList.add('pulse'); // Añadir animación si está en línea
-                document.getElementById('hum').classList.add('pulse'); // Añadir animación si está en línea
-            } else {
-                tempStatusElement.className = 'sensor-status status-offline';
-                tempStatusElement.textContent = 'Desconectado';
-                humStatusElement.className = 'sensor-status status-offline';
-                humStatusElement.textContent = 'Desconectado';
-                document.getElementById('temp').classList.remove('pulse'); // Quitar animación si está desconectado
-                document.getElementById('hum').classList.remove('pulse'); // Quitar animación si está desconectado
-                document.getElementById('temp').textContent = '--'; // Opcional: mostrar -- si está desconectado
-                document.getElementById('hum').textContent = '--';     // Opcional: mostrar -- si está desconectado
-            }
-
-        } catch (error) {
-            console.error('Error al obtener datos:', error);
-            sensorOnline = false; // Si hay un error de red, también se considera desconectado
-            document.getElementById('temp-status').className = 'sensor-status status-offline';
-            document.getElementById('temp-status').textContent = 'Desconectado';
-            document.getElementById('hum-status').className = 'sensor-status status-offline';
-            document.getElementById('hum-status').textContent = 'Desconectado';
-            document.getElementById('temp').classList.remove('pulse');
-            document.getElementById('hum').classList.remove('pulse');
-            document.getElementById('temp').textContent = '--';
-            document.getElementById('hum').textContent = '--';
+            throw new Error('Error en respuesta del servidor'); // Otros errores que no sean 401
         }
+        const data = await response.json();
+
+        // Convertir la fecha del dato a un objeto Date para comparar
+        const fechaUltimoDato = new Date(data.fecha);
+        const ahora = new Date();
+        const diferenciaMs = ahora.getTime() - fechaUltimoDato.getTime();
+
+        // Determinar el estado del sensor
+        let sensorOnline = true; // Variable local para el estado en este ciclo
+        if (diferenciaMs < umbralDesconexionMs) {
+            sensorOnline = true;
+        } else {
+            sensorOnline = false;
+        }
+
+        // Actualizar valores principales
+        document.getElementById('temp').textContent = data.temperatura ?? '--';
+        document.getElementById('hum').textContent = data.humedad ?? '--';
+        // Asegúrate de que tienes un elemento con id 'last-update-temp' y 'last-update-hum'
+        document.getElementById('last-update-temp').textContent =
+            'Última actualización: ' + (data.fecha ?? '--');
+        document.getElementById('last-update-hum').textContent =
+            'Última actualización: ' + (data.fecha ?? '--');
+
+
+        // Actualizar estados visuales
+        const tempStatusElement = document.getElementById('temp-status');
+        const humStatusElement = document.getElementById('hum-status');
+        const tempValueElement = document.getElementById('temp');
+        const humValueElement = document.getElementById('hum');
+
+
+        if (sensorOnline) {
+            tempStatusElement.className = 'status status-online'; // Cambiado de 'sensor-status' a 'status' para coincidir con tu CSS
+            tempStatusElement.textContent = 'En línea';
+            humStatusElement.className = 'status status-online'; // Cambiado de 'sensor-status' a 'status' para coincidir con tu CSS
+            humStatusElement.textContent = 'En línea';
+            tempValueElement.classList.add('pulse'); // Añadir animación si está en línea
+            humValueElement.classList.add('pulse'); // Añadir animación si está en línea
+        } else {
+            tempStatusElement.className = 'status status-offline'; // Cambiado de 'sensor-status' a 'status' para coincidir con tu CSS
+            tempStatusElement.textContent = 'Desconectado';
+            humStatusElement.className = 'status status-offline'; // Cambiado de 'sensor-status' a 'status' para coincidir con tu CSS
+            humStatusElement.textContent = 'Desconectado';
+            tempValueElement.classList.remove('pulse'); // Quitar animación si está desconectado
+            humValueElement.classList.remove('pulse'); // Quitar animación si está desconectado
+            document.getElementById('temp').textContent = '--'; // Mostrar -- si está desconectado
+            document.getElementById('hum').textContent = '--';     // Mostrar -- si está desconectado
+        }
+
+    } catch (error) {
+        console.error('Error al obtener datos:', error);
+        // Si hay un error (ej. red, servidor no responde, o 401), se asume desconexión visualmente
+        document.getElementById('temp-status').className = 'status status-offline'; // Cambiado de 'sensor-status' a 'status'
+        document.getElementById('temp-status').textContent = 'Desconectado';
+        document.getElementById('hum-status').className = 'status status-offline'; // Cambiado de 'sensor-status' a 'status'
+        document.getElementById('hum-status').textContent = 'Desconectado';
+        document.getElementById('temp').classList.remove('pulse');
+        document.getElementById('hum').classList.remove('pulse');
+        document.getElementById('temp').textContent = '--';
+        document.getElementById('hum').textContent = '--';
     }
+}
 
         // Función para obtener estadísticas
         async function obtenerEstadisticas() {
             try {
                 const response = await fetch('/status');
-                if (!response.ok) throw new Error('Error en respuesta');
+                if (!response.ok) {
+                    if (response.status === 401) return; // No hacer nada si no está autenticado
+                    throw new Error('Error en respuesta de estadísticas');
+                }
                 const data = await response.json();
 
                 document.getElementById('total-registros').textContent = data.total_registros || 0;

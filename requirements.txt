@@ -1,4 +1,6 @@
-flask
-flask_sqlalchemy
+Flask
+Flask-SQLAlchemy
+Flask-Login
+Werkzeug
 pytz
 python-dateutil

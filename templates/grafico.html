@@ -2,33 +2,207 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ClimyPy - Gráficos</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Inter', sans-serif;
             text-align: center;
-            padding: 2rem;
-            background-color: #f0f0f0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            overflow-x: hidden;
         }
         h1 {
-            color: #333;
+            color: white;
+            padding-top: 30px;
+            margin-bottom: 2rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
         canvas {
-            background: #fff;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            margin-top: 2rem;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+            margin-top: 1rem;
+            max-width: 90%;
+            height: auto;
+            display: block; /* Para centrar el canvas */
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Header (copiado de index.html para consistencia) */
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo i {
+            color: #ffd700;
+        }
+
+        .nav-menu {
+            list-style: none;
+            display: flex;
+            gap: 30px;
+        }
+
+        .nav-menu a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 15px;
+            border-radius: 5px;
+            transition: background 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-menu a:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            gap: 5px;
+        }
+
+        .hamburger span {
+            height: 3px;
+            width: 25px;
+            background-color: white;
+            border-radius: 2px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .navbar {
+                flex-wrap: wrap;
+            }
+
+            .logo {
+                width: 100%;
+                text-align: center;
+                margin-bottom: 1rem;
+                justify-content: center;
+            }
+
+            .hamburger {
+                display: flex;
+                position: absolute;
+                right: 20px;
+                top: 25px;
+            }
+
+            .nav-menu {
+                flex-direction: column;
+                width: 100%;
+                display: none;
+                text-align: center;
+                background: rgba(255, 255, 255, 0.15);
+                backdrop-filter: blur(15px);
+                border-radius: 10px;
+                margin-top: 10px;
+                padding: 15px 0;
+            }
+
+            .nav-menu.active {
+                display: flex;
+            }
+
+            .nav-menu li {
+                width: 100%;
+            }
+
+            .nav-menu a {
+                display: block;
+                padding: 10px 0;
+            }
+
         }
     </style>
 </head>
 <body>
+    <header class="header">
+        <nav class="navbar">
+            <a href="/" class="logo">
+                <i class="fas fa-cloud"></i>
+                ClimyPy
+            </a>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="/grafico"><i class="fas fa-chart-line"></i> Ver Gráficos</a></li>
+                <li><a href="/registros"><i class="fas fa-list-alt"></i> Ver Registros</a></li>
+                <li><a href="/status"><i class="fas fa-info-circle"></i> Estado del Sistema</a></li>
+                <li><a href="#about"><i class="fas fa-info"></i> Acerca de ClimyPy</a></li>
+                <li><a href="#contact"><i class="fas fa-envelope"></i> Contacto</a></li>
+                {% if current_user.is_authenticated %}
+                    <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión ({{ current_user.username }})</a></li>
+                {% else %}
+                    <li><a href="{{ url_for('login') }}"><i class="fas fa-sign-in-alt"></i> Iniciar Sesión</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </header>
+
     <h1>🌡️ Humedad y Temperatura - ClimyPy</h1>
     <canvas id="grafico" width="800" height="400"></canvas>
 
     <script>
+        // Menú móvil (copiado de index.html)
+        document.querySelector('.hamburger').addEventListener('click', function() {
+            document.querySelector('.nav-menu').classList.toggle('active');
+        });
+
         async function cargarGrafico() {
             const res = await fetch("/api/registros");
+            // Si la respuesta no es OK (ej. 401 Unauthorized por login_required), lo manejamos
+            if (!res.ok) {
+                if (res.status === 401) {
+                    console.error("No autorizado para ver registros. Inicie sesión.");
+                    // Podrías redirigir a login, o mostrar un mensaje al usuario
+                    return;
+                }
+                throw new Error('Error al cargar registros');
+            }
             const datos = await res.json();
 
             const ctx = document.getElementById("grafico").getContext("2d");
