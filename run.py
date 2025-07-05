@@ -69,7 +69,9 @@ def login():
     if current_user.is_authenticated:
         flash('Ya has iniciado sesión.', 'info')
         return redirect(url_for('index'))
-    form = LoginForm() # Usar LoginForm de forms.py
+    
+    form = LoginForm() # Se crea la instancia del formulario
+    
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
         if user and user.check_password(form.password.data):
