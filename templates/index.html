@@ -468,39 +468,71 @@
     </main>
 
     <script>
-        // Variables globales
-        let sensorOnline = true;
-        let startTime = Date.now();
+    // Variables globales
+    let sensorOnline = true; // No es estrictamente necesaria si se calcula en cada ciclo
+    let startTime = Date.now();
+    const umbralDesconexionMs = 20 * 1000; // Umbral de desconexión: 20 segundos
 
-        // Función para actualizar datos
-        async function actualizarDatos() {
-            try {
-                const response = await fetch('/data');
-                if (!response.ok) throw new Error('Error en respuesta');
-                const data = await response.json();
+    // Función para actualizar datos
+    async function actualizarDatos() {
+        try {
+            const response = await fetch('/data');
+            if (!response.ok) throw new Error('Error en respuesta');
+            const data = await response.json();
 
-                // Actualizar valores principales
-                document.getElementById('temp').textContent = data.temperatura ?? '--';
-                document.getElementById('hum').textContent = data.humedad ?? '--';
-                document.getElementById('last-update').textContent = 
-                    'Última actualización: ' + (data.fecha ?? '--');
+            // Convertir la fecha del dato a un objeto Date para comparar
+            const fechaUltimoDato = new Date(data.fecha);
+            const ahora = new Date();
+            const diferenciaMs = ahora.getTime() - fechaUltimoDato.getTime();
 
-                // Actualizar estados
+            // Determinar el estado del sensor
+            if (diferenciaMs < umbralDesconexionMs) {
                 sensorOnline = true;
-                document.getElementById('temp-status').className = 'sensor-status status-online';
-                document.getElementById('temp-status').textContent = 'En línea';
-                document.getElementById('hum-status').className = 'sensor-status status-online';
-                document.getElementById('hum-status').textContent = 'En línea';
-
-            } catch (error) {
-                console.error('Error al obtener datos:', error);
+            } else {
                 sensorOnline = false;
-                document.getElementById('temp-status').className = 'sensor-status status-offline';
-                document.getElementById('temp-status').textContent = 'Desconectado';
-                document.getElementById('hum-status').className = 'sensor-status status-offline';
-                document.getElementById('hum-status').textContent = 'Desconectado';
             }
+
+            // Actualizar valores principales
+            document.getElementById('temp').textContent = data.temperatura ?? '--';
+            document.getElementById('hum').textContent = data.humedad ?? '--';
+            document.getElementById('last-update').textContent =
+                'Última actualización: ' + (data.fecha ?? '--');
+
+            // Actualizar estados visuales
+            const tempStatusElement = document.getElementById('temp-status');
+            const humStatusElement = document.getElementById('hum-status');
+
+            if (sensorOnline) {
+                tempStatusElement.className = 'sensor-status status-online';
+                tempStatusElement.textContent = 'En línea';
+                humStatusElement.className = 'sensor-status status-online';
+                humStatusElement.textContent = 'En línea';
+                document.getElementById('temp').classList.add('pulse'); // Añadir animación si está en línea
+                document.getElementById('hum').classList.add('pulse'); // Añadir animación si está en línea
+            } else {
+                tempStatusElement.className = 'sensor-status status-offline';
+                tempStatusElement.textContent = 'Desconectado';
+                humStatusElement.className = 'sensor-status status-offline';
+                humStatusElement.textContent = 'Desconectado';
+                document.getElementById('temp').classList.remove('pulse'); // Quitar animación si está desconectado
+                document.getElementById('hum').classList.remove('pulse'); // Quitar animación si está desconectado
+                document.getElementById('temp').textContent = '--'; // Opcional: mostrar -- si está desconectado
+                document.getElementById('hum').textContent = '--';     // Opcional: mostrar -- si está desconectado
+            }
+
+        } catch (error) {
+            console.error('Error al obtener datos:', error);
+            sensorOnline = false; // Si hay un error de red, también se considera desconectado
+            document.getElementById('temp-status').className = 'sensor-status status-offline';
+            document.getElementById('temp-status').textContent = 'Desconectado';
+            document.getElementById('hum-status').className = 'sensor-status status-offline';
+            document.getElementById('hum-status').textContent = 'Desconectado';
+            document.getElementById('temp').classList.remove('pulse');
+            document.getElementById('hum').classList.remove('pulse');
+            document.getElementById('temp').textContent = '--';
+            document.getElementById('hum').textContent = '--';
         }
+    }
 
         // Función para obtener estadísticas
         async function obtenerEstadisticas() {
