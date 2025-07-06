@@ -21,3 +21,6 @@ pip install -r requirements.txt || {
 }
 echo "🌐 Ejecutando servidor Flask..."
 python3 run.py
+
+echo "🤖 Ejecutando bot de Telegram..."
+#python3 bot_telegram.py
