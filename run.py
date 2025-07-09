@@ -226,7 +226,34 @@ def flutter_logout():
     logout_user()
     return jsonify({"success": True, "message": "Cierre de sesión exitoso."}), 200
 
+@app.route('/api/flutter/historical', methods=['GET'])
+@login_required
+def historical_data():
+    # ----> AÑADE ESTA LÍNEA PARA DEPURAR <----
+    print(">>> Petición recibida en /api/flutter/historical <<<") 
+    try:
+        # Obtener los últimos 100 registros (puedes ajustar este número)
+        registros = Registro.query.order_by(Registro.fecha.desc()).limit(100).all()
+
+        # Preparar los datos en formato para gráficos
+        timestamps = [r.fecha.strftime("%H:%M") for r in registros][::-1]
+        temperaturas = [r.temperatura for r in registros][::-1]
+        humedades = [r.humedad for r in registros][::-1]
+
+        # ----> AÑADE ESTA LÍNEA PARA DEPURAR <----
+        print(f">>> Devolviendo {len(registros)} registros. <<<")
+
+        return jsonify({
+            "success": True,
+            "timestamps": timestamps,
+            "temperatura": temperaturas,
+            "humedad": humedades
+        })
+    except Exception as e:
+        # ----> AÑADE ESTA LÍNEA PARA DEPURAR <----
+        print(f"!!! ERROR en /api/flutter/historical: {e} !!!")
+        return jsonify({"success": False, "message": str(e)}), 500
+    
 if __name__ == "__main__":
     app.start_time = datetime.now()
     app.run(debug=True, host='0.0.0.0')
-
