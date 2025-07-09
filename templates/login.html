@@ -6,25 +6,149 @@
     <title>ClimyPy - Iniciar Sesión</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        /* Tus estilos (los he omitido por brevedad, pero mantené los que tenías) */
-        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #333; }
-        .login-container { background: rgba(255, 255, 255, 0.95); padding: 2.5rem; border-radius: 15px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2); width: 100%; max-width: 400px; text-align: center; }
-        h1 { color: #4a4a4a; margin-bottom: 2rem; }
-        .form-group { margin-bottom: 1.5rem; text-align: left; }
-        label { display: block; margin-bottom: 0.5rem; font-weight: bold; color: #555; }
-        input[type="text"], input[type="password"] { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 1rem; box-sizing: border-box; }
-        input[type="text"]:focus, input[type="password"]:focus { border-color: #667eea; outline: none; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2); }
-        .checkbox-group { display: flex; align-items: center; gap: 10px; justify-content: flex-start; margin-bottom: 1.5rem; }
-        .btn-submit { background-color: #667eea; color: white; padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 1.1rem; width: 100%; transition: background-color 0.3s ease; }
-        .btn-submit:hover { background-color: #5a6ce6; }
-        .flash { padding: 1rem; margin-bottom: 1rem; border-radius: 8px; font-weight: bold; }
-        .flash.success { background-color: #d4edda; color: #155724; }
-        .flash.danger { background-color: #f8d7da; color: #721c24; }
-        .flash.info { background-color: #d1ecf1; color: #0c5460; }
-        .text-muted { margin-top: 1.5rem; }
-        .text-muted a { color: #667eea; text-decoration: none; font-weight: bold; }
-        .text-muted a:hover { text-decoration: underline; }
-    </style>
+            body {
+                font-family: 'Inter', sans-serif;
+                background: linear-gradient(135deg, #1c1c1e 0%, #2c2c2e 100%);
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                color: #e0e0e0;
+                margin: 0;
+            }
+        
+            .login-container {
+                background: rgba(255, 255, 255, 0.05);
+                padding: 2.5rem;
+                border-radius: 12px;
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+                width: 100%;
+                max-width: 400px;
+                text-align: center;
+                color: #f5f5f5;
+            }
+        
+            h1 {
+                color: #f5f5f5;
+                margin-bottom: 2rem;
+                font-size: 2rem;
+                font-weight: 600;
+            }
+        
+            .form-group {
+                margin-bottom: 1.5rem;
+                text-align: left;
+            }
+        
+            label {
+                display: block;
+                margin-bottom: 0.5rem;
+                font-weight: 600;
+                color: #b0b0b0;
+            }
+        
+            input[type="text"],
+            input[type="password"] {
+                width: 100%;
+                padding: 12px;
+                border: 1px solid #444;
+                border-radius: 8px;
+                background: rgba(255, 255, 255, 0.07);
+                color: #f5f5f5;
+                font-size: 1rem;
+                box-sizing: border-box;
+                transition: all 0.2s ease;
+            }
+        
+            input[type="text"]::placeholder,
+            input[type="password"]::placeholder {
+                color: #888;
+            }
+        
+            input[type="text"]:focus,
+            input[type="password"]:focus {
+                border-color: #888;
+                outline: none;
+                box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.15);
+                background: rgba(255, 255, 255, 0.12);
+            }
+        
+            .checkbox-group {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                justify-content: flex-start;
+                margin-bottom: 1.5rem;
+            }
+        
+            .checkbox-group label {
+                margin: 0;
+                font-weight: 500;
+                color: #c5c5c5;
+            }
+        
+            .btn-submit {
+                background-color: #3a3a3c;
+                color: #f5f5f5;
+                padding: 12px 20px;
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+                font-size: 1.1rem;
+                width: 100%;
+                transition: background-color 0.3s ease, transform 0.2s ease;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            }
+        
+            .btn-submit:hover {
+                background-color: #555;
+                transform: translateY(-2px);
+            }
+        
+            .flash {
+                padding: 1rem;
+                margin-bottom: 1rem;
+                border-radius: 8px;
+                font-weight: 500;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            }
+        
+            .flash.success {
+                background-color: #3a5d4c;
+                color: #f5f5f5;
+                border: 1px solid #3a5d4c;
+            }
+        
+            .flash.danger {
+                background-color: #7a2f2f;
+                color: #f5f5f5;
+                border: 1px solid #7a2f2f;
+            }
+        
+            .flash.info {
+                background-color: #4a4a4c;
+                color: #f5f5f5;
+                border: 1px solid #4a4a4c;
+            }
+        
+            .text-muted {
+                margin-top: 1.5rem;
+                color: #aaa;
+                font-size: 0.95rem;
+            }
+        
+            .text-muted a {
+                color: #f5f5f5;
+                text-decoration: none;
+                font-weight: 500;
+            }
+        
+            .text-muted a:hover {
+                text-decoration: underline;
+            }
+        </style>
+         
 </head>
 <body>
     <div class="login-container">

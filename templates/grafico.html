@@ -12,43 +12,47 @@
             padding: 0;
             box-sizing: border-box;
         }
+    
         body {
             font-family: 'Inter', sans-serif;
             text-align: center;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1c1c1e 0%, #2c2c2e 100%);
             min-height: 100vh;
-            color: #333;
+            color: #e0e0e0;
             overflow-x: hidden;
         }
+    
         h1 {
-            color: white;
+            color: #f5f5f5;
             padding-top: 30px;
             margin-bottom: 2rem;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            font-weight: 600;
         }
+    
         canvas {
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.05);
             border-radius: 15px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
             margin-top: 1rem;
             max-width: 90%;
             height: auto;
-            display: block; /* Para centrar el canvas */
+            display: block;
             margin-left: auto;
             margin-right: auto;
         }
-
-        /* Header (copiado de index.html para consistencia) */
+    
+        /* Header */
         .header {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             padding: 1rem 0;
             position: sticky;
             top: 0;
             z-index: 1000;
         }
-
+    
         .navbar {
             display: flex;
             justify-content: space-between;
@@ -57,29 +61,29 @@
             margin: 0 auto;
             padding: 0 20px;
         }
-
+    
         .logo {
             font-size: 1.8rem;
             font-weight: bold;
-            color: white;
+            color: #f5f5f5;
             text-decoration: none;
             display: flex;
             align-items: center;
             gap: 10px;
         }
-
+    
         .logo i {
-            color: #ffd700;
+            color: #ffcc00;
         }
-
+    
         .nav-menu {
             list-style: none;
             display: flex;
             gap: 30px;
         }
-
+    
         .nav-menu a {
-            color: white;
+            color: #f5f5f5;
             text-decoration: none;
             font-weight: 500;
             padding: 8px 15px;
@@ -89,72 +93,72 @@
             align-items: center;
             gap: 8px;
         }
-
+    
         .nav-menu a:hover {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
         }
-
+    
         .hamburger {
             display: none;
             flex-direction: column;
             cursor: pointer;
             gap: 5px;
         }
-
+    
         .hamburger span {
             height: 3px;
             width: 25px;
-            background-color: white;
+            background-color: #f5f5f5;
             border-radius: 2px;
         }
-
+    
         /* Responsive */
         @media (max-width: 768px) {
             .navbar {
                 flex-wrap: wrap;
             }
-
+    
             .logo {
                 width: 100%;
                 text-align: center;
                 margin-bottom: 1rem;
                 justify-content: center;
             }
-
+    
             .hamburger {
                 display: flex;
                 position: absolute;
                 right: 20px;
                 top: 25px;
             }
-
+    
             .nav-menu {
                 flex-direction: column;
                 width: 100%;
                 display: none;
                 text-align: center;
-                background: rgba(255, 255, 255, 0.15);
-                backdrop-filter: blur(15px);
+                background: rgba(0, 0, 0, 0.3);
+                backdrop-filter: blur(10px);
                 border-radius: 10px;
                 margin-top: 10px;
                 padding: 15px 0;
             }
-
+    
             .nav-menu.active {
                 display: flex;
             }
-
+    
             .nav-menu li {
                 width: 100%;
             }
-
+    
             .nav-menu a {
                 display: block;
                 padding: 10px 0;
             }
-
         }
     </style>
+    
 </head>
 <body>
     <header class="header">

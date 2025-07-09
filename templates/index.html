@@ -20,11 +20,8 @@
                 <span></span>
             </div>
             <ul class="nav-menu">
-                <li><a href="/grafico"><i class="fas fa-chart-line"></i> Ver Gráficos</a></li>
                 <li><a href="/registros"><i class="fas fa-list-alt"></i> Ver Registros</a></li>
                 <li><a href="/status"><i class="fas fa-info-circle"></i> Estado del Sistema</a></li>
-                <li><a href="#about"><i class="fas fa-info"></i> Acerca de ClimyPy</a></li>
-                <li><a href="#contact"><i class="fas fa-envelope"></i> Contacto</a></li>
                 {% if current_user.is_authenticated %}
                     <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión ({{ current_user.username }})</a></li>
                 {% else %}
@@ -77,21 +74,6 @@
             <div class="status status-online" style="margin-top: 15px;">Sistema Operativo</div>
         </div>
     </div>
-
-    <section id="about" class="info-section">
-        <h2>Acerca de ClimyPy</h2>
-        <p>ClimyPy es un proyecto de monitoreo ambiental desarrollado para demostrar la integración de hardware (ESP32 con sensor DHT11) y software (Flask) para la recolección y visualización de datos en tiempo real.</p>
-        <ul>
-            <li><i class="fas fa-microchip"></i> **Microcontrolador ESP32:** Recolecta datos de temperatura y humedad.</li>
-            <li><i class="fab fa-python"></i> **Backend Flask:** Servidor web ligero, API REST para datos, y gestión de base de datos.</li>
-            <li><i class="fas fa-wifi"></i> **Monitoreo Inalámbrico:** Comunicación vía WiFi desde el ESP32.</li>
-            <li><i class="fas fa-mobile-alt"></i> **Interfaz Responsiva:** Dashboard web adaptable a diferentes dispositivos.</li>
-            <li><i class="fas fa-chart-bar"></i> **Gráficos Históricos:** Visualización interactiva de datos pasados.</li>
-            <li><i class="fas fa-database"></i> **Base de Datos SQLite:** Almacenamiento local y eficiente de registros.</li>
-            <li><i class="fas fa-cogs"></i> **API RESTful:** Permite la integración con otros servicios.</li>
-        </ul>
-    </section>
-
     <section id="contact" class="info-section">
         <h2>Contacto</h2>
         <div class="contact-info">
