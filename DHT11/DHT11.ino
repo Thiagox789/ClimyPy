@@ -481,8 +481,8 @@ void sendSensorData() {
   StaticJsonDocument<256> jsonDoc;
   jsonDoc["temperatura"] = temperaturaDHT;
   jsonDoc["humedad"] = humedadDHT;
-  jsonDoc["chip_temperature"] = chipTemperature;
-
+  jsonDoc["temperatura_interna_esp"] = chipTemperature;
+  
   String jsonString;
   serializeJson(jsonDoc, jsonString);
 
