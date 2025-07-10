@@ -1,4 +1,4 @@
-#include <WiFiManager.h>      // https://github.com/tzapu/WiFiManager
+#include <WiFiManager.h>        // https://github.com/tzapu/WiFiManager
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 #include <DHT.h>
@@ -34,6 +34,181 @@ bool buttonPressed = false;
 unsigned long buttonPressStart = 0;
 bool resetInProgress = false;
 
+// HTML personalizado para el portal
+const char* custom_html_head = R"(
+<style>
+  :root {
+  --primary-color: #2a9df4; /* azul para botones y highlights */
+  --secondary-color: #a0a0a0; /* gris para subtítulos y texto menos importante */
+  --background: #fafafa; /* fondo muy claro */
+  --text-color: #333333; /* texto principal oscuro pero no negro */
+  --border-color: #ddd; /* borde sutil */
+  --border-radius: 6px;
+  --shadow: 0 2px 6px rgba(0, 0, 0, 0.07);
+  --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  background: var(--background);
+  color: var(--text-color);
+  font-family: var(--font-family);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  margin: 0;
+  padding: 20px;
+}
+
+.container {
+  background: white;
+  padding: 30px 40px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  max-width: 400px;
+  width: 100%;
+  animation: fadeIn 0.4s ease-out;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.logo {
+  font-size: 2.8rem;
+  margin-bottom: 10px;
+  color: var(--primary-color);
+}
+
+.title {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.subtitle {
+  font-size: 1rem;
+  color: var(--secondary-color);
+  font-weight: 400;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+input[type="text"], input[type="password"], select {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+  outline: none;
+}
+
+input[type="text"]:focus, input[type="password"]:focus, select:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 6px rgba(42, 157, 244, 0.4);
+}
+
+.btn {
+  width: 100%;
+  padding: 12px 0;
+  border: none;
+  border-radius: var(--border-radius);
+  background: var(--primary-color);
+  color: white;
+  font-weight: 700;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.btn:hover {
+  background: #2380d9;
+}
+
+.info-card {
+  background: #f9f9f9;
+  border-left: 4px solid var(--primary-color);
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  border-radius: var(--border-radius);
+  color: var(--secondary-color);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.status-indicator {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.status-online {
+  background: #4caf50;
+  animation: pulse 2s infinite;
+}
+
+.status-offline {
+  background: #f44336;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.footer {
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--secondary-color);
+  margin-top: 25px;
+  padding-top: 15px;
+  border-top: 1px solid var(--border-color);
+}
+
+@media (max-width: 500px) {
+  .container {
+    padding: 20px;
+    margin: 10px;
+  }
+  
+  .title {
+    font-size: 1.5rem;
+  }
+}
+</style>
+)";
+
+const char* custom_html_body = R"(
+<div class="container">
+  <div class="header">
+    <div class="logo">🌡️</div>
+    <h1 class="title">ClimyPy Station</h1>
+    <p class="subtitle">Configuración de Monitoreo Climático</p>
+  </div>
+  
+  <div class="info-card">
+    <h3>📡 Estado de Conexión</h3>
+    <p><span class="status-indicator status-online"></span>Listo para configurar</p>
+    <p>Complete los campos siguientes para conectar su estación climática.</p>
+  </div>
+)";
+
 void setup() {
   Serial.begin(115200);
   delay(1000);
@@ -61,11 +236,71 @@ void setup() {
   Serial.println(serverURL);
 
   WiFiManager wm;
-
-  WiFiManagerParameter custom_server("server", "Server URL (http://ip:puerto/ruta)", serverURL.c_str(), SERVER_URL_MAX_LEN);
+  
+  // Configurar HTML personalizado
+  wm.setCustomHeadElement(custom_html_head);
+  
+  // =========================================================
+  // MODIFICACIÓN: La siguiente línea fue eliminada porque
+  // causaba el error de compilación.
+  // wm.setCustomBodyElement(custom_html_body);
+  // =========================================================
+  
+  // Configurar textos personalizados
+  wm.setTitle("ClimyPy Station");
+  wm.setDarkMode(false); // Aunque usemos colores oscuros, este flag controla el tema interno de WiFiManager, no el CSS
+  
+  // =========================================================
+  // MODIFICACIÓN: El HTML del cuerpo ahora se añade como un
+  // parámetro personalizado para que se muestre en la página.
+  // =========================================================
+  WiFiManagerParameter custom_header(custom_html_body);
+  WiFiManagerParameter custom_server("server", "🌐 URL del Servidor", serverURL.c_str(), SERVER_URL_MAX_LEN, "placeholder=\"http://192.168.1.90:5000/api/sensor\" style=\"margin-bottom: 10px;\"");
+  WiFiManagerParameter custom_info("<div class=\"info-card\"><h3>📋 Instrucciones</h3><p>1. Selecciona tu red WiFi<br>2. Introduce la contraseña<br>3. Configura la URL del servidor donde se enviarán los datos<br>4. Haz clic en 'Guardar' para completar la configuración</p></div>");
+  
+  // Añadir parámetros
+  wm.addParameter(&custom_header); // <-- Encabezado añadido aquí
+  wm.addParameter(&custom_info);
   wm.addParameter(&custom_server);
 
-  if (!wm.autoConnect("ESP32-Setup")) {
+  // Configurar timeout más largo para dar tiempo a configurar
+  wm.setConfigPortalTimeout(300); // 5 minutos
+  
+  // Mensaje de configuración personalizado
+  wm.setAPCallback([](WiFiManager *myWiFiManager) {
+    Serial.println("🎯 Portal de configuración iniciado");
+    Serial.print("📱 Conéctate a la red: ");
+    Serial.println(myWiFiManager->getConfigPortalSSID());
+    Serial.println("🌐 Ve a: http://192.168.4.1");
+    Serial.println("⏰ Tiempo límite: 5 minutos");
+    
+    // Indicador visual de que está en modo configuración
+    for (int i = 0; i < 3; i++) {
+      digitalWrite(LED_PIN, HIGH);
+      tone(PIEZO_PIN, 1000, 200);
+      delay(200);
+      digitalWrite(LED_PIN, LOW);
+      noTone(PIEZO_PIN);
+      delay(200);
+    }
+  });
+
+  // Personalizar el botón de guardar
+  wm.setSaveConfigCallback([]() {
+    Serial.println("✅ Configuración guardada exitosamente!");
+    
+    // Señal de éxito
+    for (int i = 0; i < 5; i++) {
+      digitalWrite(LED_PIN, HIGH);
+      tone(PIEZO_PIN, 2000, 100);
+      delay(100);
+      digitalWrite(LED_PIN, LOW);
+      noTone(PIEZO_PIN);
+      delay(100);
+    }
+  });
+
+  if (!wm.autoConnect("ClimyPy-Setup")) {
     Serial.println("❌ No se pudo conectar a WiFi. Reiniciando...");
     delay(3000);
     ESP.restart();
@@ -80,6 +315,16 @@ void setup() {
     Serial.println("ℹ️ Guardando nueva Server URL en EEPROM...");
     writeServerURLToEEPROM(newServerURL);
     serverURL = newServerURL;
+  }
+  
+  // Señal de conexión exitosa
+  for (int i = 0; i < 3; i++) {
+    digitalWrite(LED_PIN, HIGH);
+    tone(PIEZO_PIN, 1500, 300);
+    delay(300);
+    digitalWrite(LED_PIN, LOW);
+    noTone(PIEZO_PIN);
+    delay(200);
   }
 }
 
