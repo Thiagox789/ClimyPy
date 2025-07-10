@@ -42,7 +42,8 @@ zona_arg = pytz.timezone("America/Argentina/Buenos_Aires")
 ultimo_dato = {
     "temperatura": None,
     "humedad": None,
-    "fecha": None
+    "fecha": None,
+    "temperatura_interna_esp": None # Nuevo: Temperatura interna del chip
 }
 
 # --- Rutas para la interfaz web (sin cambios) ---
@@ -107,10 +108,15 @@ def recibir_datos():
             return jsonify({"error": "Datos incompletos"}), 400
 
         fecha_actual = datetime.now(zona_arg).strftime("%Y-%m-%d %H:%M:%S")
+        
+        # Actualizamos el diccionario en memoria con todos los datos que llegan
         ultimo_dato["temperatura"] = float(datos["temperatura"])
         ultimo_dato["humedad"] = float(datos["humedad"])
+        # Guardamos la temperatura del chip ESP32 solo en memoria, si es que viene
+        ultimo_dato["temperatura_interna_esp"] = datos.get("temperatura_interna_esp")
         ultimo_dato["fecha"] = fecha_actual
 
+        # A la base de datos solo guardamos la temperatura y humedad del sensor DHT11
         nuevo_registro = Registro(
             temperatura=float(datos["temperatura"]),
             humedad=float(datos["humedad"]),
@@ -119,7 +125,8 @@ def recibir_datos():
         db.session.add(nuevo_registro)
         db.session.commit()
 
-        print(f"[{fecha_actual}] Datos recibidos: Temp: {datos['temperatura']}°C, Hum: {datos['humedad']}%")
+        temp_interna_str = f", Temp. ESP: {ultimo_dato['temperatura_interna_esp']}°C" if ultimo_dato.get('temperatura_interna_esp') is not None else ""
+        print(f"[{fecha_actual}] Datos recibidos: Temp: {datos['temperatura']}°C, Hum: {datos['humedad']}%{temp_interna_str}")
         return jsonify({"status": "success", "message": "Datos guardados"}), 200
 
     except Exception as e:
@@ -142,6 +149,7 @@ def data():
             "status": "offline",
             "temperatura": 0.0, # Devolvemos 0.0 para no romper la UI de la app
             "humedad": 0.0,
+            "temperatura_interna_esp": 0.0,
             "fecha": "Aguardando datos del sensor..."
         })
 
@@ -167,6 +175,7 @@ def data():
             "status": "offline",
             "temperatura": 0.0,
             "humedad": 0.0,
+            "temperatura_interna_esp": 0.0,
             "fecha": "Error en el servidor"
         }), 500
 

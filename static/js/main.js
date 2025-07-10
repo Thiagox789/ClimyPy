@@ -44,6 +44,10 @@ const umbralDesconexionMs = 20 * 1000; // Umbral de desconexión: 20 segundos
                 document.getElementById('last-update-hum').textContent =
                     'Última actualización: ' + (data.fecha ?? '--');
 
+                // Nuevo: Actualizar la temperatura del chip
+                const espTemp = data.temperatura_interna_esp;
+                document.getElementById('esp-temp').textContent = (espTemp !== null && espTemp !== undefined) ? espTemp.toFixed(1) : '--';
+                document.getElementById('last-update-esp').textContent = 'Última actualización: ' + (data.fecha ?? '--');
 
                 // Actualizar estados visuales
                 const tempStatusElement = document.getElementById('temp-status');
@@ -51,6 +55,9 @@ const umbralDesconexionMs = 20 * 1000; // Umbral de desconexión: 20 segundos
                 const tempValueElement = document.getElementById('temp');
                 const humValueElement = document.getElementById('hum');
 
+                // Nuevo: Elementos de la tarjeta del chip
+                const espStatusElement = document.getElementById('esp-status');
+                const espValueElement = document.getElementById('esp-temp');
 
                 if (sensorOnline) {
                     tempStatusElement.className = 'status status-online';
@@ -59,6 +66,10 @@ const umbralDesconexionMs = 20 * 1000; // Umbral de desconexión: 20 segundos
                     humStatusElement.textContent = 'En línea';
                     tempValueElement.classList.add('pulse'); // Añadir animación si está en línea
                     humValueElement.classList.add('pulse'); // Añadir animación si está en línea
+                    // Nuevo: Estado para el chip
+                    espStatusElement.className = 'status status-online';
+                    espStatusElement.textContent = 'En línea';
+                    espValueElement.classList.add('pulse');
                 } else {
                     tempStatusElement.className = 'status status-offline';
                     tempStatusElement.textContent = 'Desconectado';
@@ -68,6 +79,11 @@ const umbralDesconexionMs = 20 * 1000; // Umbral de desconexión: 20 segundos
                     humValueElement.classList.remove('pulse'); // Quitar animación si está desconectado
                     document.getElementById('temp').textContent = '--'; // Mostrar -- si está desconectado
                     document.getElementById('hum').textContent = '--';     // Mostrar -- si está desconectado
+                    // Nuevo: Estado para el chip
+                    espStatusElement.className = 'status status-offline';
+                    espStatusElement.textContent = 'Desconectado';
+                    espValueElement.classList.remove('pulse');
+                    document.getElementById('esp-temp').textContent = '--';
                 }
 
             } catch (error) {
@@ -81,6 +97,11 @@ const umbralDesconexionMs = 20 * 1000; // Umbral de desconexión: 20 segundos
                 document.getElementById('hum').classList.remove('pulse');
                 document.getElementById('temp').textContent = '--';
                 document.getElementById('hum').textContent = '--';
+                // Nuevo: Manejo de error para el chip
+                document.getElementById('esp-status').className = 'status status-offline';
+                document.getElementById('esp-status').textContent = 'Desconectado';
+                document.getElementById('esp-temp').classList.remove('pulse');
+                document.getElementById('esp-temp').textContent = '--';
             }
         }
 
