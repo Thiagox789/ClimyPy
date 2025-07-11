@@ -309,6 +309,7 @@ def status():
     sensor_configs = SensorConfig.query.order_by(SensorConfig.sensor_number).all()
     sensor_names_dict = {
         str(config.sensor_number): { # Convertir a string para que coincida con el acceso en Flutter
+            'name': config.name_temp.replace(" - Temperatura", ""), # Derive general name for dropdown
             'temp': config.name_temp,
             'hum': config.name_hum
         } for config in sensor_configs
