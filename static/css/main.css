@@ -103,6 +103,51 @@ body {
     color: #cfcfcf;
 }
 
+.hero-buttons {
+    margin-top: 30px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap; /* Para que los botones se envuelvan en pantallas pequeñas */
+}
+
+.btn-hero {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 25px;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.btn-hero {
+    background-color: #007bff; /* Color primario */
+    color: #fff;
+    border: 2px solid #007bff;
+}
+
+.btn-hero:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+    transform: translateY(-3px);
+}
+
+.btn-hero.btn-secondary {
+    background-color: transparent;
+    color: #007bff;
+    border: 2px solid #007bff;
+}
+
+.btn-hero.btn-secondary:hover {
+    background-color: #007bff;
+    color: #fff;
+    transform: translateY(-3px);
+}
+
 /* Card Section */
 .card-container {
     display: grid;
@@ -327,6 +372,16 @@ body {
 
     .hero h1 {
         font-size: 2.5rem;
+    }
+
+    .hero-buttons {
+        flex-direction: column; /* Apilar botones en pantallas pequeñas */
+        gap: 15px;
+    }
+
+    .btn-hero {
+        width: 80%; /* Ocupar más ancho en móvil */
+        max-width: 300px; /* Limitar el ancho máximo */
     }
 
     .card-container {
