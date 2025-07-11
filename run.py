@@ -305,11 +305,21 @@ def status():
     total_records = Registro.query.count()
     ultimos_registros = Registro.query.order_by(Registro.fecha.desc()).limit(24).all()
     
+    # Obtener los nombres de los sensores de la base de datos
+    sensor_configs = SensorConfig.query.order_by(SensorConfig.sensor_number).all()
+    sensor_names_dict = {
+        str(config.sensor_number): { # Convertir a string para que coincida con el acceso en Flutter
+            'temp': config.name_temp,
+            'hum': config.name_hum
+        } for config in sensor_configs
+    }
+
     response_data = {
         "server_status": "online",
         "last_data": ultimo_dato,
         "total_records": total_records,
         "uptime": uptime_str,
+        "sensor_names": sensor_names_dict # Añadir los nombres de los sensores aquí
     }
 
     # Calcular promedios para cada sensor
