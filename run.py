@@ -403,3 +403,5 @@ def historical_data():
 if __name__ == "__main__":
     app.start_time = datetime.now()
     app.run(debug=True, host='0.0.0.0')
+
+#anda? 
