@@ -121,6 +121,8 @@ body {
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
     transition: transform 0.3s ease;
     color: #e2e2e2;
+    /* Añadido para controlar la visibilidad con JS */
+    display: block; /* Por defecto visible, JS lo ocultará si es necesario */
 }
 
 .card:hover {
@@ -329,9 +331,19 @@ body {
 
     .card-container {
         padding: 20px;
+        /* Asegura que las tarjetas se apilen en pantallas pequeñas */
+        grid-template-columns: 1fr;
     }
 
     .info-section {
         padding: 20px;
     }
+}
+
+/* Estilos para el selector de sensores en el dashboard */
+#sensor-display-select {
+    width: calc(100% - 40px); /* Ajustar al ancho del contenedor con padding */
+    max-width: 300px; /* Limitar el ancho máximo */
+    margin: 0 auto; /* Centrar el selector */
+    display: block; /* Asegurar que ocupe su propia línea */
 }
