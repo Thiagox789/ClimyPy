@@ -11,6 +11,16 @@
 #define DHT_TYPE DHT11
 DHT dht(DHT_PIN, DHT_TYPE);
 
+#define DHT_PIN_2 16 // Pin para el Sensor 2
+#define DHT_PIN_3 17 // Pin para el Sensor 3
+#define DHT_PIN_4 18 // Pin para el Sensor 4
+#define DHT_PIN_5 19 // Pin para el Sensor 5
+
+DHT dht2(DHT_PIN_2, DHT_TYPE);
+DHT dht3(DHT_PIN_3, DHT_TYPE);
+DHT dht4(DHT_PIN_4, DHT_TYPE);
+DHT dht5(DHT_PIN_5, DHT_TYPE);
+
 // PINES
 #define BUTTON_PIN 23
 #define LED_PIN    22
@@ -228,6 +238,10 @@ void setup() {
   checkButtonAtStartup();
 
   dht.begin();
+  dht2.begin();
+  dht3.begin();
+  dht4.begin();
+  dht5.begin();
 
   EEPROM.begin(EEPROM_SIZE);
 
@@ -469,19 +483,67 @@ void sendSensorData() {
     return;
   }
 
-  float temperaturaDHT = dht.readTemperature();
-  float humedadDHT = dht.readHumidity();
   float chipTemperature = temperatureRead();
 
-  if (isnan(temperaturaDHT) || isnan(humedadDHT)) {
-    Serial.println("⚠️ Error leyendo sensor DHT11.");
-    return;
+  StaticJsonDocument<512> jsonDoc; // Aumentar el tamaño del documento JSON
+
+  // Leer y añadir datos del Sensor 1
+  float temp1 = dht.readTemperature();
+  float hum1 = dht.readHumidity();
+  if (!isnan(temp1) && !isnan(hum1)) {
+    jsonDoc["temperatura"] = temp1;
+    jsonDoc["humedad"] = hum1;
+    Serial.printf("→ Temp 1: %.2f°C, Hum 1: %.2f%%\n", temp1, hum1);
+  } else {
+    Serial.println("⚠️ Error leyendo Sensor 1.");
   }
 
-  StaticJsonDocument<256> jsonDoc;
-  jsonDoc["temperatura"] = temperaturaDHT;
-  jsonDoc["humedad"] = humedadDHT;
+  // Leer y añadir datos del Sensor 2
+  float temp2 = dht2.readTemperature();
+  float hum2 = dht2.readHumidity();
+  if (!isnan(temp2) && !isnan(hum2)) {
+    jsonDoc["temperatura2"] = temp2;
+    jsonDoc["humedad2"] = hum2;
+    Serial.printf("→ Temp 2: %.2f°C, Hum 2: %.2f%%\n", temp2, hum2);
+  } else {
+    Serial.println("⚠️ Error leyendo Sensor 2.");
+  }
+
+  // Leer y añadir datos del Sensor 3
+  float temp3 = dht3.readTemperature();
+  float hum3 = dht3.readHumidity();
+  if (!isnan(temp3) && !isnan(hum3)) {
+    jsonDoc["temperatura3"] = temp3;
+    jsonDoc["humedad3"] = hum3;
+    Serial.printf("→ Temp 3: %.2f°C, Hum 3: %.2f%%\n", temp3, hum3);
+  } else {
+    Serial.println("⚠️ Error leyendo Sensor 3.");
+  }
+
+  // Leer y añadir datos del Sensor 4
+  float temp4 = dht4.readTemperature();
+  float hum4 = dht4.readHumidity();
+  if (!isnan(temp4) && !isnan(hum4)) {
+    jsonDoc["temperatura4"] = temp4;
+    jsonDoc["humedad4"] = hum4;
+    Serial.printf("→ Temp 4: %.2f°C, Hum 4: %.2f%%\n", temp4, hum4);
+  } else {
+    Serial.println("⚠️ Error leyendo Sensor 4.");
+  }
+
+  // Leer y añadir datos del Sensor 5
+  float temp5 = dht5.readTemperature();
+  float hum5 = dht5.readHumidity();
+  if (!isnan(temp5) && !isnan(hum5)) {
+    jsonDoc["temperatura5"] = temp5;
+    jsonDoc["humedad5"] = hum5;
+    Serial.printf("→ Temp 5: %.2f°C, Hum 5: %.2f%%\n", temp5, hum5);
+  } else {
+    Serial.println("⚠️ Error leyendo Sensor 5.");
+  }
+
   jsonDoc["temperatura_interna_esp"] = chipTemperature;
+  Serial.printf("→ Temp Chip ESP32: %.2f°C\n", chipTemperature);
   
   String jsonString;
   serializeJson(jsonDoc, jsonString);
@@ -496,16 +558,14 @@ void sendSensorData() {
 
     if (httpResponseCode == 200 || httpResponseCode == 201) {
       Serial.println("✅ Datos enviados exitosamente!");
-      Serial.printf("→ Temp DHT11: %.2f°C\n", temperaturaDHT);
-      Serial.printf("→ Humedad DHT11: %.2f%%\n", humedadDHT);
-      Serial.printf("→ Temp Chip ESP32: %.2f°C\n", chipTemperature);
-
       String response = http.getString();
       Serial.println("Respuesta del servidor:");
       Serial.println(response);
     } else {
       Serial.print("❌ Error en petición HTTP: ");
       Serial.println(httpResponseCode);
+      Serial.println("Payload enviado:");
+      Serial.println(jsonString);
     }
 
     http.end();

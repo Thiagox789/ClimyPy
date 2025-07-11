@@ -138,40 +138,6 @@ const umbralDesconexionMs = 20 * 1000; // Umbral de desconexión: 20 segundos
             }
         }
 
-        async function obtenerEstadisticas() {
-            try {
-                const response = await fetch('/status');
-                if (!response.ok) {
-                    if (response.status === 401) return; // No hacer nada si no está autenticado
-                    throw new Error('Error en respuesta de estadísticas');
-                }
-                const data = await response.json();
-                document.getElementById('total-records').textContent = data.total_records;
-                document.getElementById('uptime').textContent = data.uptime;
-                
-                // Actualizar promedios para cada sensor
-                for (let i = 1; i <= 5; i++) {
-                    const tempKey = `temperatura${i === 1 ? '' : i}`;
-                    const humKey = `humedad${i === 1 ? '' : i}`;
-                    const avgTempElement = document.getElementById(`avg-temp${i === 1 ? '' : ''}`); // Solo un avg-temp y avg-hum
-                    const avgHumElement = document.getElementById(`avg-hum${i === 1 ? '' : ''}`); // Solo un avg-temp y avg-hum
-
-                    if (avgTempElement && i === 1) avgTempElement.textContent = data[`average_${tempKey}_last_24h`] + '°C';
-                    if (avgHumElement && i === 1) avgHumElement.textContent = data[`average_${humKey}_last_24h`] + '%';
-                    
-                    // Si quieres mostrar promedios individuales para cada sensor, necesitarías más IDs en el HTML
-                    // Por ahora, solo actualizamos los existentes para el sensor 1.
-                }
-
-            } catch (error) {
-                console.error('Error al obtener estadísticas:', error);
-                document.getElementById('total-records').textContent = '--';
-                document.getElementById('uptime').textContent = '--';
-                document.getElementById('avg-temp').textContent = '--';
-                document.getElementById('avg-hum').textContent = '--';
-            }
-        }
-
         // Menú móvil
         document.querySelector('.hamburger').addEventListener('click', function() {
             document.querySelector('.nav-menu').classList.toggle('active');
@@ -194,7 +160,6 @@ const umbralDesconexionMs = 20 * 1000; // Umbral de desconexión: 20 segundos
         function updateSensorCardVisibility() {
             const selectedSensor = document.getElementById('sensor-display-select').value;
             const sensorCards = document.querySelectorAll('.sensor-card');
-            const statsCard = document.querySelector('.card:last-child'); // Asumiendo que la tarjeta de estadísticas es la última
 
             sensorCards.forEach(card => {
                 const cardClasses = card.classList;
@@ -210,21 +175,14 @@ const umbralDesconexionMs = 20 * 1000; // Umbral de desconexión: 20 segundos
 
                 card.style.display = isVisible ? 'block' : 'none';
             });
-
-            // La tarjeta de estadísticas siempre debe ser visible
-            if (statsCard) {
-                statsCard.style.display = 'block';
-            }
         }
 
         // Inicializar
         actualizarDatos();
-        obtenerEstadisticas();
         updateSensorCardVisibility(); // Llamar al inicio para establecer la visibilidad inicial
 
         // Intervalos de actualización
         setInterval(actualizarDatos, 3000);
-        setInterval(obtenerEstadisticas, 30000); // Estadísticas actualizadas cada 30 segundos
 
         // Añadir listener para el cambio en el selector de visualización de sensores
         document.getElementById('sensor-display-select').addEventListener('change', updateSensorCardVisibility);

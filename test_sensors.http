@@ -1,5 +1,5 @@
 ### Test Sensor Data Endpoint - All Sensors
-POST http://localhost:5000/api/sensor
+POST http://192.168.100.90:5000/api/sensor
 Content-Type: application/json
 
 {
@@ -17,7 +17,7 @@ Content-Type: application/json
 }
 
 ### Test Sensor Data Endpoint - Sensor 1 Only
-POST http://localhost:5000/api/sensor
+POST http://192.168.100.90:5000/api/sensor
 Content-Type: application/json
 
 {
@@ -27,7 +27,7 @@ Content-Type: application/json
 }
 
 ### Test Sensor Data Endpoint - Sensor 2 Only
-POST http://localhost:5000/api/sensor
+POST http://192.168.100.90:5000/api/sensor
 Content-Type: application/json
 
 {
@@ -36,7 +36,7 @@ Content-Type: application/json
 }
 
 ### Test Sensor Data Endpoint - Sensor 3 Only
-POST http://localhost:5000/api/sensor
+POST http://192.168.100.90:5000/api/sensor
 Content-Type: application/json
 
 {
@@ -45,7 +45,7 @@ Content-Type: application/json
 }
 
 ### Test Sensor Data Endpoint - Sensor 4 Only
-POST http://localhost:5000/api/sensor
+POST http://192.168.100.90:5000/api/sensor
 Content-Type: application/json
 
 {
@@ -54,7 +54,7 @@ Content-Type: application/json
 }
 
 ### Test Sensor Data Endpoint - Sensor 5 Only
-POST http://localhost:5000/api/sensor
+POST http://192.168.100.90:5000/api/sensor
 Content-Type: application/json
 
 {
@@ -63,13 +63,13 @@ Content-Type: application/json
 }
 
 ### Get Latest Data
-GET http://localhost:5000/data
+GET http://192.168.100.90:5000/data
 Accept: application/json
 
 ### Get System Status
-GET http://localhost:5000/status
+GET http://192.168.100.90:5000/status
 Accept: application/json
 
 ### Get Historical Data for Charts
-GET http://localhost:5000/api/flutter/historical
+GET http://192.168.100.90:5000/api/flutter/historical
 Accept: application/json
