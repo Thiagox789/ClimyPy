@@ -23,10 +23,13 @@
                 <li><a href="/registros"><i class="fas fa-list-alt"></i> Ver Registros</a></li>
                 <li><a href="/status"><i class="fas fa-info-circle"></i> Estado del Sistema</a></li>
                 {% if current_user.is_authenticated %}
+                    {% if current_user.is_admin %}
+                        <li><a href="{{ url_for('admin_sensors') }}"><i class="fas fa-cogs"></i> Admin Sensores</a></li>
+                    {% endif %}
                     <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión ({{ current_user.username }})</a></li>
                 {% else %}
                     <li><a href="{{ url_for('login') }}"><i class="fas fa-sign-in-alt"></i> Iniciar Sesión</a></li>
-                    <li><a href="{{ url_for('register') }}"><i class="fas fa-user-plus"></i> Registrarse</a></li> {# <-- NUEVO ENLACE #}
+                    <li><a href="{{ url_for('register') }}"><i class="fas fa-user-plus"></i> Registrarse</a></li>
                 {% endif %}
             </ul>
         </nav>
@@ -51,80 +54,79 @@
         <label for="sensor-display-select" style="color: #f5f5f5; font-size: 1.1rem; margin-right: 10px;">Mostrar Sensores:</label>
         <select id="sensor-display-select" style="padding: 8px 12px; border-radius: 5px; border: 1px solid #555; background-color: #333; color: #f5f5f5; font-size: 1rem;">
             <option value="all">Todos los Sensores</option>
-            <option value="1">Sensor 1</option>
-            <option value="2">Sensor 2</option>
-            <option value="3">Sensor 3</option>
-            <option value="4">Sensor 4</option>
-            <option value="5">Sensor 5</option>
+            {% for i in range(1, 6) %}
+                {% set sensor_base_name = sensor_names[i].temp.split(' - ')[0] if ' - ' in sensor_names[i].temp else sensor_names[i].temp %}
+                <option value="{{ i }}">{{ sensor_base_name }}</option>
+            {% endfor %}
         </select>
     </div>
 
     <div class="card-container">
         <div class="card sensor-card sensor-1">
-            <h2><i class="fas fa-thermometer-half"></i> Temperatura 1</h2>
+            <h2><i class="fas fa-thermometer-half"></i> {{ sensor_names[1].temp }}</h2>
             <div class="value"><span id="temp">--</span>°C</div>
             <p class="description" id="last-update-temp">Última actualización: --</p>
             <div class="status" id="temp-status">Cargando...</div>
         </div>
 
         <div class="card sensor-card sensor-1">
-            <h2><i class="fas fa-tint"></i> Humedad 1</h2>
+            <h2><i class="fas fa-tint"></i> {{ sensor_names[1].hum }}</h2>
             <div class="value"><span id="hum">--</span>%</div>
             <p class="description" id="last-update-hum">Última actualización: --</p>
             <div class="status" id="hum-status">Cargando...</div>
         </div>
 
         <div class="card sensor-card sensor-2">
-            <h2><i class="fas fa-thermometer-half"></i> Temperatura 2</h2>
+            <h2><i class="fas fa-thermometer-half"></i> {{ sensor_names[2].temp }}</h2>
             <div class="value"><span id="temp2">--</span>°C</div>
             <p class="description" id="last-update-temp2">Última actualización: --</p>
             <div class="status" id="temp2-status">Cargando...</div>
         </div>
 
         <div class="card sensor-card sensor-2">
-            <h2><i class="fas fa-tint"></i> Humedad 2</h2>
+            <h2><i class="fas fa-tint"></i> {{ sensor_names[2].hum }}</h2>
             <div class="value"><span id="hum2">--</span>%</div>
             <p class="description" id="last-update-hum2">Última actualización: --</p>
             <div class="status" id="hum2-status">Cargando...</div>
         </div>
 
         <div class="card sensor-card sensor-3">
-            <h2><i class="fas fa-thermometer-half"></i> Temperatura 3</h2>
+            <h2><i class="fas fa-thermometer-half"></i> {{ sensor_names[3].temp }}</h2>
             <div class="value"><span id="temp3">--</span>°C</div>
             <p class="description" id="last-update-temp3">Última actualización: --</p>
             <div class="status" id="temp3-status">Cargando...</div>
         </div>
 
         <div class="card sensor-card sensor-3">
-            <h2><i class="fas fa-tint"></i> Humedad 3</h2>
+            <h2><i class="fas fa-tint"></i> {{ sensor_names[3].hum }}</h2>
             <div class="value"><span id="hum3">--</span>%</div>
             <p class="description" id="last-update-hum3">Última actualización: --</p>
             <div class="status" id="hum3-status">Cargando...</div>
         </div>
 
         <div class="card sensor-card sensor-4">
-            <h2><i class="fas fa-thermometer-half"></i> Temperatura 4</h2>
+            <h2><i class="fas fa-thermometer-half"></i> {{ sensor_names[4].temp }}</h2>
             <div class="value"><span id="temp4">--</span>°C</div>
             <p class="description" id="last-update-temp4">Última actualización: --</p>
             <div class="status" id="temp4-status">Cargando...</div>
         </div>
 
         <div class="card sensor-card sensor-4">
-            <h2><i class="fas fa-tint"></i> Humedad 4</h2>
+            <h2><i class="fas fa-tint"></i> {{ sensor_names[4].hum }}</h2>
             <div class="value"><span id="hum4">--</span>%</div>
             <p class="description" id="last-update-hum4">Última actualización: --</p>
             <div class="status" id="hum4-status">Cargando...</div>
         </div>
 
         <div class="card sensor-card sensor-5">
-            <h2><i class="fas fa-thermometer-half"></i> Temperatura 5</h2>
+            <h2><i class="fas fa-thermometer-half"></i> {{ sensor_names[5].temp }}</h2>
             <div class="value"><span id="temp5">--</span>°C</div>
             <p class="description" id="last-update-temp5">Última actualización: --</p>
             <div class="status" id="temp5-status">Cargando...</div>
         </div>
 
         <div class="card sensor-card sensor-5">
-            <h2><i class="fas fa-tint"></i> Humedad 5</h2>
+            <h2><i class="fas fa-tint"></i> {{ sensor_names[5].hum }}</h2>
             <div class="value"><span id="hum5">--</span>%</div>
             <p class="description" id="last-update-hum5">Última actualización: --</p>
             <div class="status" id="hum5-status">Cargando...</div>

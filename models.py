@@ -23,6 +23,16 @@ class Registro(db.Model):
     def __repr__(self):
         return f"<Registro {self.id} - T1:{self.temperatura}°C, H1:{self.humedad}%>"
 
+# Clase para la configuración de los nombres de los sensores
+class SensorConfig(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    sensor_number = db.Column(db.Integer, unique=True, nullable=False) # 1, 2, 3, 4, 5
+    name_temp = db.Column(db.String(50), default="Temperatura")
+    name_hum = db.Column(db.String(50), default="Humedad")
+
+    def __repr__(self):
+        return f"<SensorConfig {self.sensor_number} - Temp: {self.name_temp}, Hum: {self.name_hum}>"
+
 # Clase para los usuarios del sistema (login)
 class User(UserMixin, db.Model): # Hereda de UserMixin
     id = db.Column(db.Integer, primary_key=True)

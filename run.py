@@ -1,12 +1,12 @@
 # run.py - VERSIÓN FINAL Y COMPLETA
 
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session
-from models import db, Registro, User
+from models import db, Registro, User, SensorConfig # Importar SensorConfig
 from datetime import datetime, timedelta
 import os
 import pytz
 from flask_login import LoginManager, login_user, current_user, logout_user, login_required
-from forms import RegistrationForm, LoginForm
+from forms import RegistrationForm, LoginForm, SensorConfigForm # Importar SensorConfigForm
 
 app = Flask(__name__)
 # Configuración de la base de datos SQLite
@@ -24,7 +24,7 @@ login_manager.login_view = 'login'
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-# Creación de tablas y usuario admin
+# Creación de tablas, usuario admin y configuración de sensores por defecto
 with app.app_context():
     db.create_all()
     if not User.query.filter_by(username='admin').first():
@@ -33,6 +33,16 @@ with app.app_context():
         db.session.add(admin_user)
         db.session.commit()
         print("Usuario 'admin' creado con contraseña 'lobito200' y email 'admin@climypy.com'.")
+    
+    # Crear configuraciones de sensores por defecto si no existen
+    for i in range(1, 6):
+        if not SensorConfig.query.filter_by(sensor_number=i).first():
+            default_temp_name = f"Sensor {i} - Temperatura"
+            default_hum_name = f"Sensor {i} - Humedad"
+            sensor_config = SensorConfig(sensor_number=i, name_temp=default_temp_name, name_hum=default_hum_name)
+            db.session.add(sensor_config)
+    db.session.commit()
+    print("Configuraciones de sensores por defecto creadas/verificadas.")
 
 # Zona horaria
 zona_arg = pytz.timezone("America/Argentina/Buenos_Aires")
@@ -54,11 +64,19 @@ ultimo_dato = {
     "temperatura_interna_esp": None # Temperatura interna del chip
 }
 
-# --- Rutas para la interfaz web (sin cambios) ---
+# --- Rutas para la interfaz web ---
 @app.route("/")
 @login_required
 def index():
-    return render_template("index.html")
+    # Obtener los nombres de los sensores de la base de datos
+    sensor_configs = SensorConfig.query.order_by(SensorConfig.sensor_number).all()
+    sensor_names = {
+        config.sensor_number: {
+            'temp': config.name_temp,
+            'hum': config.name_hum
+        } for config in sensor_configs
+    }
+    return render_template("index.html", sensor_names=sensor_names)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -94,6 +112,42 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for('login'))
+
+# Ruta para el panel de administración de sensores
+@app.route("/admin/sensors", methods=['GET', 'POST'])
+@login_required
+def admin_sensors():
+    if not current_user.is_admin:
+        flash('No tienes permisos para acceder a esta página.', 'danger')
+        return redirect(url_for('index'))
+
+    form = SensorConfigForm()
+    
+    if request.method == 'POST' and form.validate_on_submit():
+        for i in range(1, 6):
+            sensor_config = SensorConfig.query.filter_by(sensor_number=i).first()
+            if sensor_config:
+                sensor_config.name_temp = getattr(form, f'name_temp_{i}').data
+                sensor_config.name_hum = getattr(form, f'name_hum_{i}').data
+            else:
+                # Esto no debería pasar si se crean por defecto al inicio
+                new_config = SensorConfig(
+                    sensor_number=i,
+                    name_temp=getattr(form, f'name_temp_{i}').data,
+                    name_hum=getattr(form, f'name_hum_{i}').data
+                )
+                db.session.add(new_config)
+        db.session.commit()
+        flash('Nombres de sensores actualizados exitosamente!', 'success')
+        return redirect(url_for('admin_sensors'))
+    
+    # GET request: Cargar los datos actuales en el formulario
+    sensor_configs = SensorConfig.query.order_by(SensorConfig.sensor_number).all()
+    for config in sensor_configs:
+        setattr(form, f'name_temp_{config.sensor_number}', config.name_temp)
+        setattr(form, f'name_hum_{config.sensor_number}', config.name_hum)
+    
+    return render_template('admin_sensors.html', title='Administrar Sensores', form=form)
 
 @app.route("/grafico")
 @login_required
