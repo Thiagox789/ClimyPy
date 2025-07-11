@@ -188,6 +188,19 @@
     </header>
 
     <h1>🌡️ Humedad y Temperatura - ClimyPy</h1>
+
+    <div style="margin-bottom: 20px;">
+        <label for="sensor-select" style="color: #f5f5f5; font-size: 1.1rem; margin-right: 10px;">Seleccionar Sensor:</label>
+        <select id="sensor-select" style="padding: 8px 12px; border-radius: 5px; border: 1px solid #555; background-color: #333; color: #f5f5f5; font-size: 1rem;">
+            <option value="all">Todos los Sensores</option>
+            <option value="1">Sensor 1</option>
+            <option value="2">Sensor 2</option>
+            <option value="3">Sensor 3</option>
+            <option value="4">Sensor 4</option>
+            <option value="5">Sensor 5</option>
+        </select>
+    </div>
+
     <canvas id="grafico" width="800" height="400"></canvas>
 
     <script>
@@ -196,40 +209,68 @@
             document.querySelector('.nav-menu').classList.toggle('active');
         });
 
+        let myChart; // Variable global para la instancia del gráfico
+
         async function cargarGrafico() {
-            const res = await fetch("/api/registros");
-            // Si la respuesta no es OK (ej. 401 Unauthorized por login_required), lo manejamos
+            const res = await fetch("/api/flutter/historical");
             if (!res.ok) {
                 if (res.status === 401) {
                     console.error("No autorizado para ver registros. Inicie sesión.");
-                    // Podrías redirigir a login, o mostrar un mensaje al usuario
                     return;
                 }
                 throw new Error('Error al cargar registros');
             }
             const datos = await res.json();
 
+            const selectedSensor = document.getElementById('sensor-select').value;
             const ctx = document.getElementById("grafico").getContext("2d");
-            new Chart(ctx, {
+            
+            const datasets = [];
+            const colors = [
+                { temp: "rgb(255, 99, 132)", hum: "rgb(54, 162, 235)" }, // Sensor 1
+                { temp: "rgb(75, 192, 192)", hum: "rgb(153, 102, 255)" }, // Sensor 2
+                { temp: "rgb(255, 159, 64)", hum: "rgb(201, 203, 207)" }, // Sensor 3
+                { temp: "rgb(192, 75, 75)", hum: "rgb(75, 75, 192)" },   // Sensor 4
+                { temp: "rgb(159, 64, 255)", hum: "rgb(64, 255, 159)" }    // Sensor 5
+            ];
+
+            for (let i = 1; i <= 5; i++) {
+                const tempKey = `temperatura${i === 1 ? '' : i}`;
+                const humKey = `humedad${i === 1 ? '' : i}`;
+                const labelSuffix = i === 1 ? '' : ` ${i}`;
+
+                if (selectedSensor === 'all' || selectedSensor === String(i)) {
+                    if (datos[tempKey]) {
+                        datasets.push({
+                            label: `Temperatura${labelSuffix} (°C)`,
+                            data: datos[tempKey],
+                            borderColor: colors[i-1].temp,
+                            tension: 0.2,
+                            fill: false
+                        });
+                    }
+                    if (datos[humKey]) {
+                        datasets.push({
+                            label: `Humedad${labelSuffix} (%)`,
+                            data: datos[humKey],
+                            borderColor: colors[i-1].hum,
+                            tension: 0.2,
+                            fill: false
+                        });
+                    }
+                }
+            }
+
+            // Destruir el gráfico existente si lo hay
+            if (myChart) {
+                myChart.destroy();
+            }
+
+            myChart = new Chart(ctx, {
                 type: "line",
                 data: {
-                    labels: datos.fechas,
-                    datasets: [
-                        {
-                            label: "Temperatura (°C)",
-                            data: datos.temperaturas,
-                            borderColor: "rgb(255, 99, 132)",
-                            tension: 0.2,
-                            fill: false
-                        },
-                        {
-                            label: "Humedad (%)",
-                            data: datos.humedades,
-                            borderColor: "rgb(54, 162, 235)",
-                            tension: 0.2,
-                            fill: false
-                        }
-                    ]
+                    labels: datos.timestamps,
+                    datasets: datasets
                 },
                 options: {
                     responsive: true,
@@ -251,7 +292,11 @@
             });
         }
 
+        // Cargar el gráfico inicialmente
         cargarGrafico();
+
+        // Añadir listener para el cambio en el selector
+        document.getElementById('sensor-select').addEventListener('change', cargarGrafico);
     </script>
 </body>
 </html>

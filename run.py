@@ -42,8 +42,16 @@ zona_arg = pytz.timezone("America/Argentina/Buenos_Aires")
 ultimo_dato = {
     "temperatura": None,
     "humedad": None,
+    "temperatura2": None,
+    "humedad2": None,
+    "temperatura3": None,
+    "humedad3": None,
+    "temperatura4": None,
+    "humedad4": None,
+    "temperatura5": None,
+    "humedad5": None,
     "fecha": None,
-    "temperatura_interna_esp": None # Nuevo: Temperatura interna del chip
+    "temperatura_interna_esp": None # Temperatura interna del chip
 }
 
 # --- Rutas para la interfaz web (sin cambios) ---
@@ -104,29 +112,53 @@ def registros():
 def recibir_datos():
     try:
         datos = request.get_json()
-        if not datos or 'temperatura' not in datos or 'humedad' not in datos:
-            return jsonify({"error": "Datos incompletos"}), 400
+        if not datos:
+            return jsonify({"error": "No se recibieron datos"}), 400
 
         fecha_actual = datetime.now(zona_arg).strftime("%Y-%m-%d %H:%M:%S")
         
-        # Actualizamos el diccionario en memoria con todos los datos que llegan
-        ultimo_dato["temperatura"] = float(datos["temperatura"])
-        ultimo_dato["humedad"] = float(datos["humedad"])
-        # Guardamos la temperatura del chip ESP32 solo en memoria, si es que viene
+        # Crear un diccionario para los datos del nuevo registro
+        registro_data = {"fecha": datetime.now(zona_arg)}
+
+        # Iterar sobre los posibles sensores (1 a 5)
+        for i in range(1, 6):
+            temp_key = f"temperatura{i}" if i > 1 else "temperatura"
+            hum_key = f"humedad{i}" if i > 1 else "humedad"
+
+            if temp_key in datos and datos[temp_key] is not None:
+                ultimo_dato[temp_key] = float(datos[temp_key])
+                registro_data[temp_key] = float(datos[temp_key])
+            else:
+                ultimo_dato[temp_key] = None # Asegurarse de que esté en None si no se envía
+
+            if hum_key in datos and datos[hum_key] is not None:
+                ultimo_dato[hum_key] = float(datos[hum_key])
+                registro_data[hum_key] = float(datos[hum_key])
+            else:
+                ultimo_dato[hum_key] = None # Asegurarse de que esté en None si no se envía
+
+        # Guardar la temperatura del chip ESP32 solo en memoria, si es que viene
         ultimo_dato["temperatura_interna_esp"] = datos.get("temperatura_interna_esp")
         ultimo_dato["fecha"] = fecha_actual
 
-        # A la base de datos solo guardamos la temperatura y humedad del sensor DHT11
-        nuevo_registro = Registro(
-            temperatura=float(datos["temperatura"]),
-            humedad=float(datos["humedad"]),
-            fecha=datetime.now(zona_arg)
-        )
+        # Crear el nuevo registro con los datos recibidos
+        nuevo_registro = Registro(**registro_data)
         db.session.add(nuevo_registro)
         db.session.commit()
 
-        temp_interna_str = f", Temp. ESP: {ultimo_dato['temperatura_interna_esp']}°C" if ultimo_dato.get('temperatura_interna_esp') is not None else ""
-        print(f"[{fecha_actual}] Datos recibidos: Temp: {datos['temperatura']}°C, Hum: {datos['humedad']}%{temp_interna_str}")
+        log_message = f"[{fecha_actual}] Datos recibidos:"
+        for i in range(1, 6):
+            temp_key = f"temperatura{i}" if i > 1 else "temperatura"
+            hum_key = f"humedad{i}" if i > 1 else "humedad"
+            if ultimo_dato.get(temp_key) is not None:
+                log_message += f" T{i}: {ultimo_dato[temp_key]}°C,"
+            if ultimo_dato.get(hum_key) is not None:
+                log_message += f" H{i}: {ultimo_dato[hum_key]}%,"
+        
+        if ultimo_dato.get('temperatura_interna_esp') is not None:
+            log_message += f" Temp. ESP: {ultimo_dato['temperatura_interna_esp']}°C"
+        
+        print(log_message.strip(',')) # Eliminar la última coma si existe
         return jsonify({"status": "success", "message": "Datos guardados"}), 200
 
     except Exception as e:
@@ -144,14 +176,20 @@ def data():
     SENSOR_TIMEOUT_SECONDS = 15
 
     # Caso 1: El servidor acaba de iniciar y nunca ha recibido datos.
+    # Caso 1: El servidor acaba de iniciar y nunca ha recibido datos.
     if ultimo_dato.get("fecha") is None:
-        return jsonify({
+        # Devolvemos un diccionario con todos los campos inicializados a 0.0 o None
+        # para que el frontend pueda procesarlos sin errores.
+        initial_data = {
             "status": "offline",
-            "temperatura": 0.0, # Devolvemos 0.0 para no romper la UI de la app
-            "humedad": 0.0,
-            "temperatura_interna_esp": 0.0,
             "fecha": "Aguardando datos del sensor..."
-        })
+        }
+        for key in ultimo_dato:
+            if key not in ["fecha", "temperatura_interna_esp"]: # No sobrescribir estos
+                initial_data[key] = 0.0 if "temperatura" in key or "humedad" in key else None
+            elif key == "temperatura_interna_esp":
+                initial_data[key] = 0.0
+        return jsonify(initial_data)
 
     try:
         # Caso 2: Ya hemos recibido datos, comprobamos si son recientes.
@@ -163,6 +201,10 @@ def data():
         response_data = ultimo_dato.copy()
         if diferencia.total_seconds() > SENSOR_TIMEOUT_SECONDS:
             response_data["status"] = "offline"
+            # Si está offline, podemos limpiar los valores para que el frontend muestre "--"
+            for key in response_data:
+                if "temperatura" in key or "humedad" in key:
+                    response_data[key] = None
         else:
             response_data["status"] = "online"
         
@@ -171,13 +213,17 @@ def data():
     except Exception as e:
         # Caso 3: Ocurrió un error inesperado.
         print(f"Error en el endpoint /data: {e}")
-        return jsonify({
+        # Devolvemos un diccionario con todos los campos inicializados a 0.0 o None
+        error_data = {
             "status": "offline",
-            "temperatura": 0.0,
-            "humedad": 0.0,
-            "temperatura_interna_esp": 0.0,
             "fecha": "Error en el servidor"
-        }), 500
+        }
+        for key in ultimo_dato:
+            if key not in ["fecha", "temperatura_interna_esp"]:
+                error_data[key] = None
+            elif key == "temperatura_interna_esp":
+                error_data[key] = None
+        return jsonify(error_data), 500
 
 # --- Ruta /status (sin cambios) ---
 @app.route("/status")
@@ -189,20 +235,26 @@ def status():
     uptime_str = f"{hours}h {minutes}m {seconds}s"
     total_records = Registro.query.count()
     ultimos_registros = Registro.query.order_by(Registro.fecha.desc()).limit(24).all()
-    if ultimos_registros:
-        avg_temp = sum(r.temperatura for r in ultimos_registros) / len(ultimos_registros)
-        avg_hum = sum(r.humedad for r in ultimos_registros) / len(ultimos_registros)
-    else:
-        avg_temp = 0.0
-        avg_hum = 0.0
-    return jsonify({
+    
+    response_data = {
         "server_status": "online",
         "last_data": ultimo_dato,
         "total_records": total_records,
         "uptime": uptime_str,
-        "average_temperature_last_24h": round(avg_temp, 2),
-        "average_humidity_last_24h": round(avg_hum, 2)
-    })
+    }
+
+    # Calcular promedios para cada sensor
+    for i in range(1, 6):
+        temp_key = f"temperatura{i}" if i > 1 else "temperatura"
+        hum_key = f"humedad{i}" if i > 1 else "humedad"
+        
+        temps = [getattr(r, temp_key) for r in ultimos_registros if getattr(r, temp_key) is not None]
+        hums = [getattr(r, hum_key) for r in ultimos_registros if getattr(r, hum_key) is not None]
+
+        response_data[f"average_{temp_key}_last_24h"] = round(sum(temps) / len(temps), 2) if temps else 0.0
+        response_data[f"average_{hum_key}_last_24h"] = round(sum(hums) / len(hums), 2) if hums else 0.0
+    
+    return jsonify(response_data)
 
 # --- Rutas de API para Flutter (sin cambios) ---
 @app.route('/api/flutter/register', methods=['POST'])
@@ -246,18 +298,23 @@ def historical_data():
 
         # Preparar los datos en formato para gráficos
         timestamps = [r.fecha.strftime("%H:%M") for r in registros][::-1]
-        temperaturas = [r.temperatura for r in registros][::-1]
-        humedades = [r.humedad for r in registros][::-1]
+        
+        response_data = {
+            "success": True,
+            "timestamps": timestamps
+        }
+
+        for i in range(1, 6):
+            temp_key = f"temperatura{i}" if i > 1 else "temperatura"
+            hum_key = f"humedad{i}" if i > 1 else "humedad"
+            
+            response_data[temp_key] = [getattr(r, temp_key) for r in registros][::-1]
+            response_data[hum_key] = [getattr(r, hum_key) for r in registros][::-1]
 
         # ----> AÑADE ESTA LÍNEA PARA DEPURAR <----
         print(f">>> Devolviendo {len(registros)} registros. <<<")
 
-        return jsonify({
-            "success": True,
-            "timestamps": timestamps,
-            "temperatura": temperaturas,
-            "humedad": humedades
-        })
+        return jsonify(response_data)
     except Exception as e:
         # ----> AÑADE ESTA LÍNEA PARA DEPURAR <----
         print(f"!!! ERROR en /api/flutter/historical: {e} !!!")

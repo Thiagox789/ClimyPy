@@ -15,8 +15,16 @@
         <thead>
             <tr>
                 <th>ID</th>
-                <th>Temperatura (°C)</th>
-                <th>Humedad (%)</th>
+                <th>Temp 1 (°C)</th>
+                <th>Hum 1 (%)</th>
+                <th>Temp 2 (°C)</th>
+                <th>Hum 2 (%)</th>
+                <th>Temp 3 (°C)</th>
+                <th>Hum 3 (%)</th>
+                <th>Temp 4 (°C)</th>
+                <th>Hum 4 (%)</th>
+                <th>Temp 5 (°C)</th>
+                <th>Hum 5 (%)</th>
                 <th>Fecha</th>
             </tr>
         </thead>
@@ -24,8 +32,16 @@
             {% for reg in registros %}
             <tr>
                 <td>{{ reg.id }}</td>
-                <td>{{ reg.temperatura }}</td>
-                <td>{{ reg.humedad }}</td>
+                <td>{{ reg.temperatura if reg.temperatura is not none else '--' }}</td>
+                <td>{{ reg.humedad if reg.humedad is not none else '--' }}</td>
+                <td>{{ reg.temperatura2 if reg.temperatura2 is not none else '--' }}</td>
+                <td>{{ reg.humedad2 if reg.humedad2 is not none else '--' }}</td>
+                <td>{{ reg.temperatura3 if reg.temperatura3 is not none else '--' }}</td>
+                <td>{{ reg.humedad3 if reg.humedad3 is not none else '--' }}</td>
+                <td>{{ reg.temperatura4 if reg.temperatura4 is not none else '--' }}</td>
+                <td>{{ reg.humedad4 if reg.humedad4 is not none else '--' }}</td>
+                <td>{{ reg.temperatura5 if reg.temperatura5 is not none else '--' }}</td>
+                <td>{{ reg.humedad5 if reg.humedad5 is not none else '--' }}</td>
                 <td>{{ reg.fecha }}</td>
             </tr>
             {% endfor %}

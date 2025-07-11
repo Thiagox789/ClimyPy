@@ -1,0 +1,75 @@
+### Test Sensor Data Endpoint - All Sensors
+POST http://localhost:5000/api/sensor
+Content-Type: application/json
+
+{
+  "temperatura": 25.1,
+  "humedad": 60.5,
+  "temperatura2": 22.3,
+  "humedad2": 55.2,
+  "temperatura3": 28.0,
+  "humedad3": 70.1,
+  "temperatura4": 20.5,
+  "humedad4": 45.8,
+  "temperatura5": 26.7,
+  "humedad5": 68.9,
+  "temperatura_interna_esp": 45.0
+}
+
+### Test Sensor Data Endpoint - Sensor 1 Only
+POST http://localhost:5000/api/sensor
+Content-Type: application/json
+
+{
+  "temperatura": 24.5,
+  "humedad": 58.0,
+  "temperatura_interna_esp": 44.5
+}
+
+### Test Sensor Data Endpoint - Sensor 2 Only
+POST http://localhost:5000/api/sensor
+Content-Type: application/json
+
+{
+  "temperatura2": 21.0,
+  "humedad2": 50.0
+}
+
+### Test Sensor Data Endpoint - Sensor 3 Only
+POST http://localhost:5000/api/sensor
+Content-Type: application/json
+
+{
+  "temperatura3": 27.0,
+  "humedad3": 65.0
+}
+
+### Test Sensor Data Endpoint - Sensor 4 Only
+POST http://localhost:5000/api/sensor
+Content-Type: application/json
+
+{
+  "temperatura4": 19.0,
+  "humedad4": 40.0
+}
+
+### Test Sensor Data Endpoint - Sensor 5 Only
+POST http://localhost:5000/api/sensor
+Content-Type: application/json
+
+{
+  "temperatura5": 25.0,
+  "humedad5": 60.0
+}
+
+### Get Latest Data
+GET http://localhost:5000/data
+Accept: application/json
+
+### Get System Status
+GET http://localhost:5000/status
+Accept: application/json
+
+### Get Historical Data for Charts
+GET http://localhost:5000/api/flutter/historical
+Accept: application/json

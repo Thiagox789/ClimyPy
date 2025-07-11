@@ -8,12 +8,20 @@ db = SQLAlchemy()
 # Clase para los registros de temperatura y humedad
 class Registro(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    temperatura = db.Column(db.Float, nullable=False)
-    humedad = db.Column(db.Float, nullable=False)
+    temperatura = db.Column(db.Float, nullable=True) # Hacemos nullable para permitir datos parciales
+    humedad = db.Column(db.Float, nullable=True)     # Hacemos nullable para permitir datos parciales
+    temperatura2 = db.Column(db.Float, nullable=True)
+    humedad2 = db.Column(db.Float, nullable=True)
+    temperatura3 = db.Column(db.Float, nullable=True)
+    humedad3 = db.Column(db.Float, nullable=True)
+    temperatura4 = db.Column(db.Float, nullable=True)
+    humedad4 = db.Column(db.Float, nullable=True)
+    temperatura5 = db.Column(db.Float, nullable=True)
+    humedad5 = db.Column(db.Float, nullable=True)
     fecha = db.Column(db.DateTime, default=datetime.utcnow) # Guarda la fecha en UTC por defecto
 
     def __repr__(self):
-        return f"<Registro {self.temperatura}°C, {self.humedad}%, {self.fecha}>"
+        return f"<Registro {self.id} - T1:{self.temperatura}°C, H1:{self.humedad}%>"
 
 # Clase para los usuarios del sistema (login)
 class User(UserMixin, db.Model): # Hereda de UserMixin

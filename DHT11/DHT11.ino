@@ -300,7 +300,7 @@ void setup() {
     }
   });
 
-  if (!wm.autoConnect("ClimyPy-Setup")) {
+if (!wm.autoConnect("ClimyPy-Setup", "climy2025")) {
     Serial.println("❌ No se pudo conectar a WiFi. Reiniciando...");
     delay(3000);
     ESP.restart();

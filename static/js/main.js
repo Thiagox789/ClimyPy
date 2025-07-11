@@ -36,72 +36,105 @@ const umbralDesconexionMs = 20 * 1000; // Umbral de desconexión: 20 segundos
                     sensorOnline = false;
                 }
 
-                // Actualizar valores principales
-                document.getElementById('temp').textContent = data.temperatura ?? '--';
-                document.getElementById('hum').textContent = data.humedad ?? '--';
-                document.getElementById('last-update-temp').textContent =
-                    'Última actualización: ' + (data.fecha ?? '--');
-                document.getElementById('last-update-hum').textContent =
-                    'Última actualización: ' + (data.fecha ?? '--');
+                // Actualizar valores para cada sensor
+                for (let i = 1; i <= 5; i++) {
+                    const tempKey = `temperatura${i === 1 ? '' : i}`;
+                    const humKey = `humedad${i === 1 ? '' : i}`;
 
-                // Nuevo: Actualizar la temperatura del chip
+                    const tempElement = document.getElementById(`temp${i === 1 ? '' : i}`);
+                    const humElement = document.getElementById(`hum${i === 1 ? '' : i}`);
+                    const lastUpdateTempElement = document.getElementById(`last-update-temp${i === 1 ? '' : i}`);
+                    const lastUpdateHumElement = document.getElementById(`last-update-hum${i === 1 ? '' : i}`);
+                    const tempStatusElement = document.getElementById(`temp${i === 1 ? '' : i}-status`);
+                    const humStatusElement = document.getElementById(`hum${i === 1 ? '' : i}-status`);
+
+                    if (tempElement) tempElement.textContent = data[tempKey] !== null ? data[tempKey].toFixed(1) : '--';
+                    if (humElement) humElement.textContent = data[humKey] !== null ? data[humKey].toFixed(1) : '--';
+                    if (lastUpdateTempElement) lastUpdateTempElement.textContent = 'Última actualización: ' + (data.fecha ?? '--');
+                    if (lastUpdateHumElement) lastUpdateHumElement.textContent = 'Última actualización: ' + (data.fecha ?? '--');
+
+                    if (sensorOnline) {
+                        if (tempStatusElement) {
+                            tempStatusElement.className = 'status status-online';
+                            tempStatusElement.textContent = 'En línea';
+                        }
+                        if (humStatusElement) {
+                            humStatusElement.className = 'status status-online';
+                            humStatusElement.textContent = 'En línea';
+                        }
+                        if (tempElement) tempElement.classList.add('pulse');
+                        if (humElement) humElement.classList.add('pulse');
+                    } else {
+                        if (tempStatusElement) {
+                            tempStatusElement.className = 'status status-offline';
+                            tempStatusElement.textContent = 'Desconectado';
+                        }
+                        if (humStatusElement) {
+                            humStatusElement.className = 'status status-offline';
+                            humStatusElement.textContent = 'Desconectado';
+                        }
+                        if (tempElement) tempElement.classList.remove('pulse');
+                        if (humElement) humElement.classList.remove('pulse');
+                        if (tempElement) tempElement.textContent = '--';
+                        if (humElement) humElement.textContent = '--';
+                    }
+                }
+
+                // Actualizar la temperatura del chip (siempre es solo uno)
                 const espTemp = data.temperatura_interna_esp;
-                document.getElementById('esp-temp').textContent = (espTemp !== null && espTemp !== undefined) ? espTemp.toFixed(1) : '--';
-                document.getElementById('last-update-esp').textContent = 'Última actualización: ' + (data.fecha ?? '--');
-
-                // Actualizar estados visuales
-                const tempStatusElement = document.getElementById('temp-status');
-                const humStatusElement = document.getElementById('hum-status');
-                const tempValueElement = document.getElementById('temp');
-                const humValueElement = document.getElementById('hum');
-
-                // Nuevo: Elementos de la tarjeta del chip
+                const espTempElement = document.getElementById('esp-temp');
+                const lastUpdateEspElement = document.getElementById('last-update-esp');
                 const espStatusElement = document.getElementById('esp-status');
-                const espValueElement = document.getElementById('esp-temp');
+
+                if (espTempElement) espTempElement.textContent = (espTemp !== null && espTemp !== undefined) ? espTemp.toFixed(1) : '--';
+                if (lastUpdateEspElement) lastUpdateEspElement.textContent = 'Última actualización: ' + (data.fecha ?? '--');
 
                 if (sensorOnline) {
-                    tempStatusElement.className = 'status status-online';
-                    tempStatusElement.textContent = 'En línea';
-                    humStatusElement.className = 'status status-online';
-                    humStatusElement.textContent = 'En línea';
-                    tempValueElement.classList.add('pulse'); // Añadir animación si está en línea
-                    humValueElement.classList.add('pulse'); // Añadir animación si está en línea
-                    // Nuevo: Estado para el chip
-                    espStatusElement.className = 'status status-online';
-                    espStatusElement.textContent = 'En línea';
-                    espValueElement.classList.add('pulse');
+                    if (espStatusElement) {
+                        espStatusElement.className = 'status status-online';
+                        espStatusElement.textContent = 'En línea';
+                    }
+                    if (espTempElement) espTempElement.classList.add('pulse');
                 } else {
-                    tempStatusElement.className = 'status status-offline';
-                    tempStatusElement.textContent = 'Desconectado';
-                    humStatusElement.className = 'status status-offline';
-                    humStatusElement.textContent = 'Desconectado';
-                    tempValueElement.classList.remove('pulse'); // Quitar animación si está desconectado
-                    humValueElement.classList.remove('pulse'); // Quitar animación si está desconectado
-                    document.getElementById('temp').textContent = '--'; // Mostrar -- si está desconectado
-                    document.getElementById('hum').textContent = '--';     // Mostrar -- si está desconectado
-                    // Nuevo: Estado para el chip
-                    espStatusElement.className = 'status status-offline';
-                    espStatusElement.textContent = 'Desconectado';
-                    espValueElement.classList.remove('pulse');
-                    document.getElementById('esp-temp').textContent = '--';
+                    if (espStatusElement) {
+                        espStatusElement.className = 'status status-offline';
+                        espStatusElement.textContent = 'Desconectado';
+                    }
+                    if (espTempElement) espTempElement.classList.remove('pulse');
+                    if (espTempElement) espTempElement.textContent = '--';
                 }
 
             } catch (error) {
                 console.error('Error al obtener datos:', error);
-                // Si hay un error (ej. red, servidor no responde, o 401), se asume desconexión visualmente
-                document.getElementById('temp-status').className = 'status status-offline';
-                document.getElementById('temp-status').textContent = 'Desconectado';
-                document.getElementById('hum-status').className = 'status status-offline';
-                document.getElementById('hum-status').textContent = 'Desconectado';
-                document.getElementById('temp').classList.remove('pulse');
-                document.getElementById('hum').classList.remove('pulse');
-                document.getElementById('temp').textContent = '--';
-                document.getElementById('hum').textContent = '--';
-                // Nuevo: Manejo de error para el chip
-                document.getElementById('esp-status').className = 'status status-offline';
-                document.getElementById('esp-status').textContent = 'Desconectado';
-                document.getElementById('esp-temp').classList.remove('pulse');
-                document.getElementById('esp-temp').textContent = '--';
+                // Si hay un error, se asume desconexión visualmente para todos los sensores
+                for (let i = 1; i <= 5; i++) {
+                    const tempElement = document.getElementById(`temp${i === 1 ? '' : i}`);
+                    const humElement = document.getElementById(`hum${i === 1 ? '' : i}`);
+                    const tempStatusElement = document.getElementById(`temp${i === 1 ? '' : i}-status`);
+                    const humStatusElement = document.getElementById(`hum${i === 1 ? '' : i}-status`);
+
+                    if (tempStatusElement) {
+                        tempStatusElement.className = 'status status-offline';
+                        tempStatusElement.textContent = 'Desconectado';
+                    }
+                    if (humStatusElement) {
+                        humStatusElement.className = 'status status-offline';
+                        humStatusElement.textContent = 'Desconectado';
+                    }
+                    if (tempElement) tempElement.classList.remove('pulse');
+                    if (humElement) humElement.classList.remove('pulse');
+                    if (tempElement) tempElement.textContent = '--';
+                    if (humElement) humElement.textContent = '--';
+                }
+                // Manejo de error para el chip
+                const espTempElement = document.getElementById('esp-temp');
+                const espStatusElement = document.getElementById('esp-status');
+                if (espStatusElement) {
+                    espStatusElement.className = 'status status-offline';
+                    espStatusElement.textContent = 'Desconectado';
+                }
+                if (espTempElement) espTempElement.classList.remove('pulse');
+                if (espTempElement) espTempElement.textContent = '--';
             }
         }
 
@@ -115,8 +148,21 @@ const umbralDesconexionMs = 20 * 1000; // Umbral de desconexión: 20 segundos
                 const data = await response.json();
                 document.getElementById('total-records').textContent = data.total_records;
                 document.getElementById('uptime').textContent = data.uptime;
-                document.getElementById('avg-temp').textContent = data.average_temperature_last_24h + '°C';
-                document.getElementById('avg-hum').textContent = data.average_humidity_last_24h + '%';
+                
+                // Actualizar promedios para cada sensor
+                for (let i = 1; i <= 5; i++) {
+                    const tempKey = `temperatura${i === 1 ? '' : i}`;
+                    const humKey = `humedad${i === 1 ? '' : i}`;
+                    const avgTempElement = document.getElementById(`avg-temp${i === 1 ? '' : ''}`); // Solo un avg-temp y avg-hum
+                    const avgHumElement = document.getElementById(`avg-hum${i === 1 ? '' : ''}`); // Solo un avg-temp y avg-hum
+
+                    if (avgTempElement && i === 1) avgTempElement.textContent = data[`average_${tempKey}_last_24h`] + '°C';
+                    if (avgHumElement && i === 1) avgHumElement.textContent = data[`average_${humKey}_last_24h`] + '%';
+                    
+                    // Si quieres mostrar promedios individuales para cada sensor, necesitarías más IDs en el HTML
+                    // Por ahora, solo actualizamos los existentes para el sensor 1.
+                }
+
             } catch (error) {
                 console.error('Error al obtener estadísticas:', error);
                 document.getElementById('total-records').textContent = '--';
@@ -144,10 +190,41 @@ const umbralDesconexionMs = 20 * 1000; // Umbral de desconexión: 20 segundos
             });
         });
 
+        // Función para controlar la visibilidad de las tarjetas de sensores
+        function updateSensorCardVisibility() {
+            const selectedSensor = document.getElementById('sensor-display-select').value;
+            const sensorCards = document.querySelectorAll('.sensor-card');
+            const statsCard = document.querySelector('.card:last-child'); // Asumiendo que la tarjeta de estadísticas es la última
+
+            sensorCards.forEach(card => {
+                const cardClasses = card.classList;
+                let isVisible = false;
+
+                if (selectedSensor === 'all') {
+                    isVisible = true;
+                } else if (cardClasses.contains(`sensor-${selectedSensor}`)) {
+                    isVisible = true;
+                } else if (selectedSensor === 'esp-chip' && cardClasses.contains('esp-chip-card')) {
+                    isVisible = true;
+                }
+
+                card.style.display = isVisible ? 'block' : 'none';
+            });
+
+            // La tarjeta de estadísticas siempre debe ser visible
+            if (statsCard) {
+                statsCard.style.display = 'block';
+            }
+        }
+
         // Inicializar
         actualizarDatos();
         obtenerEstadisticas();
+        updateSensorCardVisibility(); // Llamar al inicio para establecer la visibilidad inicial
 
         // Intervalos de actualización
         setInterval(actualizarDatos, 3000);
         setInterval(obtenerEstadisticas, 30000); // Estadísticas actualizadas cada 30 segundos
+
+        // Añadir listener para el cambio en el selector de visualización de sensores
+        document.getElementById('sensor-display-select').addEventListener('change', updateSensorCardVisibility);
