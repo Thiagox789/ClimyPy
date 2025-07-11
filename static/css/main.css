@@ -400,5 +400,142 @@ body {
     width: calc(100% - 40px); /* Ajustar al ancho del contenedor con padding */
     max-width: 300px; /* Limitar el ancho máximo */
     margin: 0 auto; /* Centrar el selector */
-    display: block; /* Asegurar que ocupe su propia línea */
+    display: inline-block; /* Para que el botón pueda estar al lado */
+    vertical-align: middle;
+}
+
+.btn-config-modal {
+    background-color: #6c757d; /* Gris para el botón de configuración */
+    color: #fff;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-left: 10px;
+    vertical-align: middle;
+}
+
+.btn-config-modal:hover {
+    background-color: #5a6268;
+}
+
+/* Estilos del Modal */
+.modal {
+    display: none; /* Oculto por defecto */
+    position: fixed; /* Permanece en su lugar */
+    z-index: 1001; /* Por encima de todo lo demás */
+    left: 0;
+    top: 0;
+    width: 100%; /* Ancho completo */
+    height: 100%; /* Altura completa */
+    overflow: auto; /* Habilitar scroll si es necesario */
+    background-color: rgba(0,0,0,0.7); /* Fondo oscuro semi-transparente */
+    backdrop-filter: blur(5px); /* Efecto de desenfoque */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: #2c2c2e;
+    margin: auto;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    width: 90%;
+    max-width: 500px;
+    position: relative;
+    color: #f5f5f5;
+    animation: fadeInScale 0.3s ease-out;
+}
+
+@keyframes fadeInScale {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.modal-content h2 {
+    text-align: center;
+    margin-bottom: 25px;
+    color: #007bff;
+    font-size: 1.8rem;
+}
+
+.close-button {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    cursor: pointer;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: #f5f5f5;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.sensor-checkboxes {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Dos columnas */
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.sensor-checkboxes label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.1rem;
+    color: #e0e0e0;
+    cursor: pointer;
+}
+
+.sensor-checkboxes input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    accent-color: #007bff; /* Color del checkbox */
+    cursor: pointer;
+}
+
+.btn-save-config {
+    background-color: #007bff;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    width: 100%;
+    transition: background-color 0.3s ease;
+}
+
+.btn-save-config:hover {
+    background-color: #0056b3;
+}
+
+/* Responsive para el modal */
+@media (max-width: 500px) {
+    .modal-content {
+        padding: 20px;
+        width: 95%;
+    }
+    .sensor-checkboxes {
+        grid-template-columns: 1fr; /* Una columna en pantallas muy pequeñas */
+    }
+    .btn-config-modal {
+        margin-top: 10px; /* Separar del select en móvil */
+        margin-left: 0;
+        width: calc(100% - 40px);
+        max-width: 300px;
+    }
+    #sensor-display-select {
+        margin-bottom: 10px;
+    }
 }

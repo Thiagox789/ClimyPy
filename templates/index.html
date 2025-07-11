@@ -47,10 +47,6 @@
     <section class="hero">
         <h1>¡Bienvenido a ClimyPy!</h1>
         <p>Monitoreo de temperatura y humedad en tiempo real.</p>
-        <div class="hero-buttons">
-            <a href="/grafico" class="btn-hero"><i class="fas fa-chart-line"></i> Ver Gráficos</a>
-            <a href="/registros" class="btn-hero btn-secondary"><i class="fas fa-list-alt"></i> Ver Registros</a>
-        </div>
     </section>
 
     <div style="margin-bottom: 20px; text-align: center;">
@@ -63,6 +59,24 @@
             <option value="4">Sensor 4</option>
             <option value="5">Sensor 5</option>
         </select>
+        <button id="open-config-modal" class="btn-config-modal"><i class="fas fa-cog"></i> Configurar Dashboard</button>
+    </div>
+
+    <!-- Modal de Configuración -->
+    <div id="config-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Configurar Visibilidad de Sensores</h2>
+            <div class="sensor-checkboxes">
+                <label><input type="checkbox" id="toggle-sensor-1" value="1" checked> Sensor 1</label>
+                <label><input type="checkbox" id="toggle-sensor-2" value="2" checked> Sensor 2</label>
+                <label><input type="checkbox" id="toggle-sensor-3" value="3" checked> Sensor 3</label>
+                <label><input type="checkbox" id="toggle-sensor-4" value="4" checked> Sensor 4</label>
+                <label><input type="checkbox" id="toggle-sensor-5" value="5" checked> Sensor 5</label>
+                <label><input type="checkbox" id="toggle-esp-chip" value="esp-chip" checked> Temp. del Chip</label>
+            </div>
+            <button id="save-config" class="btn-save-config">Guardar Configuración</button>
+        </div>
     </div>
 
     <div class="card-container">
