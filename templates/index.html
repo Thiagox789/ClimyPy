@@ -20,15 +20,13 @@
                 <span></span>
             </div>
             <ul class="nav-menu">
-                <li><a href="/"><i class="fas fa-home"></i> Inicio</a></li>
-                <li><a href="/grafico"><i class="fas fa-chart-line"></i> Ver Gráficos</a></li>
                 <li><a href="/registros"><i class="fas fa-list-alt"></i> Ver Registros</a></li>
                 <li><a href="/status"><i class="fas fa-info-circle"></i> Estado del Sistema</a></li>
                 {% if current_user.is_authenticated %}
                     <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión ({{ current_user.username }})</a></li>
                 {% else %}
                     <li><a href="{{ url_for('login') }}"><i class="fas fa-sign-in-alt"></i> Iniciar Sesión</a></li>
-                    <li><a href="{{ url_for('register') }}"><i class="fas fa-user-plus"></i> Registrarse</a></li>
+                    <li><a href="{{ url_for('register') }}"><i class="fas fa-user-plus"></i> Registrarse</a></li> {# <-- NUEVO ENLACE #}
                 {% endif %}
             </ul>
         </nav>
@@ -59,24 +57,6 @@
             <option value="4">Sensor 4</option>
             <option value="5">Sensor 5</option>
         </select>
-        <button id="open-config-modal" class="btn-config-modal"><i class="fas fa-cog"></i> Configurar Dashboard</button>
-    </div>
-
-    <!-- Modal de Configuración -->
-    <div id="config-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-button">&times;</span>
-            <h2>Configurar Visibilidad de Sensores</h2>
-            <div class="sensor-checkboxes">
-                <label><input type="checkbox" id="toggle-sensor-1" value="1" checked> Sensor 1</label>
-                <label><input type="checkbox" id="toggle-sensor-2" value="2" checked> Sensor 2</label>
-                <label><input type="checkbox" id="toggle-sensor-3" value="3" checked> Sensor 3</label>
-                <label><input type="checkbox" id="toggle-sensor-4" value="4" checked> Sensor 4</label>
-                <label><input type="checkbox" id="toggle-sensor-5" value="5" checked> Sensor 5</label>
-                <label><input type="checkbox" id="toggle-esp-chip" value="esp-chip" checked> Temp. del Chip</label>
-            </div>
-            <button id="save-config" class="btn-save-config">Guardar Configuración</button>
-        </div>
     </div>
 
     <div class="card-container">
@@ -162,14 +142,13 @@
     <section id="contact" class="info-section">
         <h2>Contacto</h2>
         <div class="contact-info">
-            <p><i class="fas fa-envelope"></i> Email: <a href="mailto:infotech.soporte@gmail.com">infotech.soporte@gmail.com</a></p>
+            <p><i class="fas fa-envelope"></i> Email: <a href="mailto:tu.email@example.com">infotech.soporte@gmail.com</a></p>
             <p><i class="fas fa-map-marker-alt"></i> Ubicación: Mendoza, Argentina</p>
         </div>
     </section>
 
     <footer class="footer">
-        <p>&copy; 2025 ClimyPy. Todos los derechos reservados.</p>
-        <p>Desarrollado con <i class="fas fa-heart" style="color: #e04040;"></i> por ClimyPy Team</p>
+        &copy; 2025 ClimyPy. Todos los derechos reservados.
     </footer>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
