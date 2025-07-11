@@ -2,50 +2,174 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8" />
-    <title>Registros ClimyPy</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClimyPy • Registros</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     <style>
-        table { border-collapse: collapse; width: 100%; }
-        th, td { border: 1px solid #aaa; padding: 8px; text-align: center; }
-        th { background-color: #4CAF50; color: white; }
+        .container {
+            max-width: 95%; /* Aumentar el ancho máximo del contenedor */
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #2a2a2a;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            color: #f5f5f5;
+        }
+        table {
+            font-size: 0.9em; /* Aumentar el tamaño de la fuente de la tabla */
+        }
+        th, td {
+            padding: 12px 8px; /* Aumentar el padding de celdas */
+        }
+        h1 {
+            color: #f5f5f5;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #444;
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: #333;
+            color: #f5f5f5;
+        }
+        tr:nth-child(even) {
+            background-color: #2f2f2f;
+        }
+        tr:hover {
+            background-color: #3a3a3a;
+        }
+        .pagination {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .pagination a, .pagination span {
+            display: inline-block;
+            padding: 8px 12px;
+            margin: 0 4px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .pagination a:hover {
+            background-color: #0056b3;
+        }
+        .pagination .current-page {
+            background-color: #0056b3;
+            font-weight: bold;
+        }
+        .pagination .disabled {
+            background-color: #555;
+            cursor: not-allowed;
+        }
+        .table-responsive {
+            overflow-x: auto; /* Permite el desplazamiento horizontal */
+            -webkit-overflow-scrolling: touch; /* Mejora el desplazamiento en dispositivos táctiles */
+        }
     </style>
 </head>
 <body>
-    <h1>Últimos registros de temperatura y humedad</h1>
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Temp 1 (°C)</th>
-                <th>Hum 1 (%)</th>
-                <th>Temp 2 (°C)</th>
-                <th>Hum 2 (%)</th>
-                <th>Temp 3 (°C)</th>
-                <th>Hum 3 (%)</th>
-                <th>Temp 4 (°C)</th>
-                <th>Hum 4 (%)</th>
-                <th>Temp 5 (°C)</th>
-                <th>Hum 5 (%)</th>
-                <th>Fecha</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for reg in registros %}
-            <tr>
-                <td>{{ reg.id }}</td>
-                <td>{{ reg.temperatura if reg.temperatura is not none else '--' }}</td>
-                <td>{{ reg.humedad if reg.humedad is not none else '--' }}</td>
-                <td>{{ reg.temperatura2 if reg.temperatura2 is not none else '--' }}</td>
-                <td>{{ reg.humedad2 if reg.humedad2 is not none else '--' }}</td>
-                <td>{{ reg.temperatura3 if reg.temperatura3 is not none else '--' }}</td>
-                <td>{{ reg.humedad3 if reg.humedad3 is not none else '--' }}</td>
-                <td>{{ reg.temperatura4 if reg.temperatura4 is not none else '--' }}</td>
-                <td>{{ reg.humedad4 if reg.humedad4 is not none else '--' }}</td>
-                <td>{{ reg.temperatura5 if reg.temperatura5 is not none else '--' }}</td>
-                <td>{{ reg.humedad5 if reg.humedad5 is not none else '--' }}</td>
-                <td>{{ reg.fecha }}</td>
-            </tr>
+    <header class="header">
+        <nav class="navbar">
+            <a href="/" class="logo">
+                <i class="fas fa-cloud"></i>
+                ClimyPy
+            </a>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="/registros"><i class="fas fa-list-alt"></i> Ver Registros</a></li>
+                <li><a href="/status"><i class="fas fa-info-circle"></i> Estado del Sistema</a></li>
+                {% if current_user.is_authenticated %}
+                    {% if current_user.is_admin %}
+                        <li><a href="{{ url_for('admin_sensors') }}"><i class="fas fa-cogs"></i> Admin Sensores</a></li>
+                    {% endif %}
+                    <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión ({{ current_user.username }})</a></li>
+                {% else %}
+                    <li><a href="{{ url_for('login') }}"><i class="fas fa-sign-in-alt"></i> Iniciar Sesión</a></li>
+                    <li><a href="{{ url_for('register') }}"><i class="fas fa-user-plus"></i> Registrarse</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </header>
+
+    <div class="container">
+        <h1>Últimos registros de temperatura y humedad</h1>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        {% for i in range(1, 6) %}
+                            <th>{{ sensor_names[i].temp }} (°C)</th>
+                            <th>{{ sensor_names[i].hum }} (%)</th>
+                        {% endfor %}
+                        <th>Fecha</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for reg in registros %}
+                    <tr>
+                        <td>{{ reg.id }}</td>
+                        <td>{{ reg.temperatura if reg.temperatura is not none else '--' }}</td>
+                        <td>{{ reg.humedad if reg.humedad is not none else '--' }}</td>
+                        <td>{{ reg.temperatura2 if reg.temperatura2 is not none else '--' }}</td>
+                        <td>{{ reg.humedad2 if reg.humedad2 is not none else '--' }}</td>
+                        <td>{{ reg.temperatura3 if reg.temperatura3 is not none else '--' }}</td>
+                        <td>{{ reg.humedad3 if reg.humedad3 is not none else '--' }}</td>
+                        <td>{{ reg.temperatura4 if reg.temperatura4 is not none else '--' }}</td>
+                        <td>{{ reg.humedad4 if reg.humedad4 is not none else '--' }}</td>
+                        <td>{{ reg.temperatura5 if reg.temperatura5 is not none else '--' }}</td>
+                        <td>{{ reg.humedad5 if reg.humedad5 is not none else '--' }}</td>
+                        <td>{{ reg.fecha }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination">
+            {% if pagination.has_prev %}
+                <a href="{{ url_for('registros', page=pagination.prev_num) }}">Anterior</a>
+            {% else %}
+                <span class="disabled">Anterior</span>
+            {% endif %}
+
+            {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                {% if page_num %}
+                    {% if pagination.page == page_num %}
+                        <span class="current-page">{{ page_num }}</span>
+                    {% else %}
+                        <a href="{{ url_for('registros', page=page_num) }}">{{ page_num }}</a>
+                    {% endif %}
+                {% else %}
+                    <span class="ellipsis">...</span>
+                {% endif %}
             {% endfor %}
-        </tbody>
-    </table>
+
+            {% if pagination.has_next %}
+                <a href="{{ url_for('registros', page=pagination.next_num) }}">Siguiente</a>
+            {% else %}
+                <span class="disabled">Siguiente</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <footer class="footer">
+        &copy; 2025 ClimyPy. Todos los derechos reservados.
+    </footer>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>

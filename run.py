@@ -157,8 +157,23 @@ def grafico():
 @app.route("/registros")
 @login_required
 def registros():
-    registros = Registro.query.order_by(Registro.fecha.desc()).all()
-    return render_template("registros.html", registros=registros)
+    page = request.args.get('page', 1, type=int)
+    per_page = 20 # Puedes ajustar este número según tus necesidades
+    
+    registros_paginados = Registro.query.order_by(Registro.fecha.desc()).paginate(
+        page=page, per_page=per_page, error_out=False
+    )
+
+    # Obtener los nombres de los sensores de la base de datos
+    sensor_configs = SensorConfig.query.order_by(SensorConfig.sensor_number).all()
+    sensor_names = {
+        config.sensor_number: {
+            'temp': config.name_temp,
+            'hum': config.name_hum
+        } for config in sensor_configs
+    }
+    
+    return render_template("registros.html", registros=registros_paginados.items, pagination=registros_paginados, sensor_names=sensor_names)
 
 # --- Ruta API para el sensor (sin cambios) ---
 # Esta ruta actualiza la variable `ultimo_dato`
